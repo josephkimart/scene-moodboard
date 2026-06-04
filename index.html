@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>씬 무드보드 레이아웃 도우미</title>
+<title>Scene Moodboard Helper</title>
 <style>
   :root {
     --bg: #0f1117;
@@ -37,6 +37,29 @@
 
   header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
   header p { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+  .lang-toggle {
+    margin-left: auto;
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .lang-btn {
+    padding: 5px 13px;
+    font-size: 12px;
+    font-weight: 700;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .lang-btn.active { background: var(--accent); color: #fff; }
+  .lang-btn:not(.active):hover { background: var(--surface); color: var(--text); }
 
   .icon-badge {
     width: 36px; height: 36px;
@@ -729,8 +752,12 @@
 <header>
   <div class="icon-badge">🎨</div>
   <div>
-    <h1>씬 무드보드 레이아웃 도우미</h1>
-    <p>배경 레이어 구조 시각화 & 색조/채도/명도 가이드</p>
+    <h1 data-i18n="appTitle">씬 무드보드 레이아웃 도우미</h1>
+    <p data-i18n="appSubtitle">배경 레이어 구조 시각화 & 색조/채도/명도 가이드</p>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-ko" onclick="setLang('ko')">한국어</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">English</button>
   </div>
 </header>
 
@@ -738,28 +765,28 @@
   <!-- ── 왼쪽 캔버스 ── -->
   <div class="canvas-area">
     <div class="toolbar">
-      <label>비율</label>
+      <label data-i18n="ratio">비율</label>
       <select id="ratio-select" onchange="updateRatio()">
-        <option value="16/9">16:9 와이드</option>
-        <option value="4/3">4:3</option>
-        <option value="21/9">21:9 시네마틱</option>
-        <option value="1/1">1:1 정방형</option>
+        <option value="16/9" data-i18n-opt="r169">16:9 와이드</option>
+        <option value="4/3" data-i18n-opt="r43">4:3</option>
+        <option value="21/9" data-i18n-opt="r219">21:9 시네마틱</option>
+        <option value="1/1" data-i18n-opt="r11">1:1 정방형</option>
       </select>
       <div class="separator"></div>
-      <label>분위기</label>
+      <label data-i18n="mood">분위기</label>
       <select id="mood-quick" onchange="applyMoodQuick()">
-        <option value="">직접 설정</option>
-        <option value="golden">황혼 골든아워</option>
-        <option value="night">심야 도시</option>
-        <option value="foggy">안개 아침</option>
-        <option value="fantasy">판타지 마법</option>
-        <option value="winter">설원 냉랭</option>
-        <option value="summer">여름 낮</option>
+        <option value="" data-i18n-opt="moodCustom">직접 설정</option>
+        <option value="golden" data-i18n-opt="moodGolden">황혼 골든아워</option>
+        <option value="night" data-i18n-opt="moodNight">심야 도시</option>
+        <option value="foggy" data-i18n-opt="moodFoggy">안개 아침</option>
+        <option value="fantasy" data-i18n-opt="moodFantasy">판타지 마법</option>
+        <option value="winter" data-i18n-opt="moodWinter">설원 냉랭</option>
+        <option value="summer" data-i18n-opt="moodSummer">여름 낮</option>
       </select>
       <div class="separator"></div>
       <div class="active-layer-indicator">
         <div class="active-dot" id="active-dot"></div>
-        <span id="active-label">레이어를 클릭해 선택</span>
+        <span id="active-label" data-i18n="clickLayer">레이어를 클릭해 선택</span>
       </div>
     </div>
 
@@ -818,8 +845,8 @@
              ondrop="onImageDrop(event)">
           <input type="file" accept="image/*" onchange="onImageFile(event)">
           <div class="analyze-drop-icon">📂</div>
-          <p><b>이미지를 드래그하거나 클릭</b>해서 업로드</p>
-          <p style="margin-top:4px;">PNG · JPG · WEBP — 존별 지배색 자동 추출</p>
+          <p><b data-i18n="analyzeDropBold">이미지를 드래그하거나 클릭</b><span data-i18n="analyzeDropSuffix">해서 업로드</span></p>
+          <p style="margin-top:4px;" data-i18n="analyzeDropSub">PNG · JPG · WEBP — 존별 지배색 자동 추출</p>
         </div>
 
         <!-- 분석 결과 워크스페이스 -->
@@ -832,8 +859,8 @@
           </div>
           <!-- 하단 액션 -->
           <div class="analyze-footer">
-            <button onclick="applyAllAnalyzed()">전체 적용</button>
-            <button onclick="resetAnalyze()" style="border-color:#e05c5c;color:#e05c5c;">초기화</button>
+            <button data-i18n="analyzeApplyAll" onclick="applyAllAnalyzed()">전체 적용</button>
+            <button data-i18n="analyzeReset" onclick="resetAnalyze()" style="border-color:#e05c5c;color:#e05c5c;">초기화</button>
           </div>
         </div>
       </div>
@@ -845,28 +872,28 @@
 
     <!-- HSB 컨트롤 -->
     <div class="panel-section">
-      <div class="panel-title">🎛 레이어 색조 조정</div>
-      <div id="no-selection" style="color:var(--text-dim);font-size:12px;padding:8px 0;">
+      <div class="panel-title" data-i18n="ptHSB">🎛 레이어 색조 조정</div>
+      <div id="no-selection" style="color:var(--text-dim);font-size:12px;padding:8px 0;" data-i18n="noSelection">
         왼쪽 씬에서 레이어를 선택하세요
       </div>
       <div id="hsb-controls" style="display:none;">
         <div class="hsb-group">
           <div class="hsb-row">
-            <label>색상(H) <span id="val-h">210°</span></label>
+            <label><span data-i18n="hsbH">색상(H)</span> <span id="val-h">210°</span></label>
             <input type="range" id="slider-h" min="0" max="360" value="210" oninput="onHSBChange()">
           </div>
           <div class="hsb-row">
-            <label>채도(S) <span id="val-s">40%</span></label>
+            <label><span data-i18n="hsbS">채도(S)</span> <span id="val-s">40%</span></label>
             <input type="range" id="slider-s" min="0" max="100" value="40" oninput="onHSBChange()">
           </div>
           <div class="hsb-row">
-            <label>명도(B) <span id="val-b">70%</span></label>
+            <label><span data-i18n="hsbB">명도(B)</span> <span id="val-b">70%</span></label>
             <input type="range" id="slider-b" min="0" max="100" value="70" oninput="onHSBChange()">
           </div>
         </div>
         <div class="color-preview-strip" id="color-preview-strip"></div>
         <div style="margin-top:10px; display:flex; gap:6px; align-items:center;">
-          <div style="font-size:11px;color:var(--text-dim);">추천 범위:</div>
+          <div style="font-size:11px;color:var(--text-dim);" data-i18n="hsbRange">추천 범위:</div>
           <div id="guide-badge" style="font-size:11px;color:var(--text);background:var(--surface2);padding:3px 8px;border-radius:20px;border:1px solid var(--border);"></div>
         </div>
       </div>
@@ -874,29 +901,29 @@
 
     <!-- 자동 보정 -->
     <div class="panel-section">
-      <div class="panel-title">🎯 색상 자동 보정</div>
+      <div class="panel-title" data-i18n="ptHarmonize">🎯 색상 자동 보정</div>
       <div class="harmonize-section">
 
         <!-- 색조 어울림 타입 -->
         <div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:7px;">색조 어울림</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:7px;" data-i18n="colorHarmony">색조 어울림</div>
           <div class="harmony-type-grid" id="harmony-type-grid"></div>
         </div>
 
         <!-- 자동 감지 뱃지 -->
         <div class="harmony-detected" id="harmony-detected" style="display:none">
-          <span class="hd-label">감지:</span>
+          <span class="hd-label" data-i18n="detectedLabel">감지:</span>
           <span class="hd-name" id="hd-name"></span>
           <span class="hd-desc" id="hd-desc"></span>
         </div>
 
         <!-- 보정 강도 -->
         <div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">보정 강도</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;" data-i18n="strLabel">보정 강도</div>
           <div class="strength-track" id="strength-track">
-            <button class="str-btn" data-v="0.25" onclick="setStrength(this)">약하게</button>
-            <button class="str-btn active" data-v="0.55" onclick="setStrength(this)">균형</button>
-            <button class="str-btn" data-v="0.85" onclick="setStrength(this)">강하게</button>
+            <button class="str-btn" data-v="0.25" data-i18n="strWeak" onclick="setStrength(this)">약하게</button>
+            <button class="str-btn active" data-v="0.55" data-i18n="strBal" onclick="setStrength(this)">균형</button>
+            <button class="str-btn" data-v="0.85" data-i18n="strStr" onclick="setStrength(this)">강하게</button>
           </div>
         </div>
 
@@ -915,38 +942,38 @@
         <div class="diff-badges" id="diff-badges"></div>
 
         <div class="harmonize-actions">
-          <button onclick="previewHarmonize()">미리보기</button>
-          <button class="primary" onclick="applyHarmonize()">보정 적용</button>
-          <button class="danger" id="undo-btn" onclick="undoHarmonize()" style="display:none">되돌리기</button>
+          <button data-i18n="previewBtn" onclick="previewHarmonize()">미리보기</button>
+          <button class="primary" data-i18n="applyBtn" onclick="applyHarmonize()">보정 적용</button>
+          <button class="danger" data-i18n="undoBtn" id="undo-btn" onclick="undoHarmonize()" style="display:none">되돌리기</button>
         </div>
       </div>
     </div>
 
     <!-- 레이어별 가이드 -->
     <div class="panel-section">
-      <div class="panel-title">📐 레이어별 색 가이드</div>
+      <div class="panel-title" data-i18n="ptLayerGuide">📐 레이어별 색 가이드</div>
       <div class="layer-guide-row" id="layer-guide-row"></div>
     </div>
 
     <!-- 색조 조화 가이드 -->
     <div class="panel-section">
-      <div class="panel-title">🌈 색조 조화 패턴</div>
+      <div class="panel-title" data-i18n="ptHarmonyPattern">🌈 색조 조화 패턴</div>
       <div class="guide-grid" id="harmony-grid"></div>
     </div>
 
     <!-- 분위기 프리셋 -->
     <div class="panel-section">
-      <div class="panel-title">✨ 씬 분위기 프리셋</div>
+      <div class="panel-title" data-i18n="ptPreset">✨ 씬 분위기 프리셋</div>
       <div class="preset-list" id="preset-list"></div>
     </div>
 
     <!-- 내보내기 -->
     <div class="panel-section">
-      <div class="panel-title">💾 내보내기</div>
+      <div class="panel-title" data-i18n="ptExport">💾 내보내기</div>
       <div class="export-row">
-        <button onclick="exportCSS()">CSS 변수</button>
-        <button onclick="exportJSON()">JSON</button>
-        <button class="primary" onclick="copyAll()">클립보드 복사</button>
+        <button data-i18n="exportCSS" onclick="exportCSS()">CSS 변수</button>
+        <button data-i18n="exportJSON" onclick="exportJSON()">JSON</button>
+        <button class="primary" data-i18n="exportCopy" onclick="copyAll()">클립보드 복사</button>
       </div>
     </div>
 
@@ -956,60 +983,243 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── 다국어 ───────────────────────────────────────────────────
+const LANGS = {
+  ko: {
+    appTitle: '씬 무드보드 레이아웃 도우미',
+    appSubtitle: '배경 레이어 구조 시각화 & 색조/채도/명도 가이드',
+    ratio: '비율', mood: '분위기', clickLayer: '레이어를 클릭해 선택',
+    generate: '생성', local: '로컬',
+    editingSuffix: '편집 중',
+    r169:'16:9 와이드', r43:'4:3', r219:'21:9 시네마틱', r11:'1:1 정방형',
+    moodCustom:'직접 설정', moodGolden:'황혼 골든아워', moodNight:'심야 도시',
+    moodFoggy:'안개 아침', moodFantasy:'판타지 마법', moodWinter:'설원 냉랭', moodSummer:'여름 낮',
+    ptHSB:'🎛 레이어 색조 조정', ptHarmonize:'🎯 색상 자동 보정',
+    ptLayerGuide:'📐 레이어별 색 가이드', ptHarmonyPattern:'🌈 색조 조화 패턴',
+    ptPreset:'✨ 씬 분위기 프리셋', ptExport:'💾 내보내기',
+    ptAnalyze:'🖼 이미지 분석 · 색상 추출',
+    hsbH:'색상(H)', hsbS:'채도(S)', hsbB:'명도(B)', hsbRange:'추천 범위:',
+    noSelection:'왼쪽 씬에서 레이어를 선택하세요',
+    colorHarmony:'색조 어울림', strLabel:'보정 강도',
+    strWeak:'약하게', strBal:'균형', strStr:'강하게',
+    previewBtn:'미리보기', applyBtn:'보정 적용', undoBtn:'되돌리기',
+    detectedLabel:'감지:', harmonizeConfirmed:'보정 확정됨',
+    exportCSS:'CSS 변수', exportJSON:'JSON', exportCopy:'클립보드 복사',
+    analyzeToggleOpen:'펼치기 ▾', analyzeToggleClose:'접기 ▴',
+    analyzeDropBold:'이미지를 드래그하거나 클릭', analyzeDropSuffix:'해서 업로드',
+    analyzeDropSub:'PNG · JPG · WEBP — 존별 지배색 자동 추출',
+    analyzeApplyAll:'전체 적용', analyzeReset:'초기화', analyzeApplyZone:'적용',
+    // Layers
+    skyName:'하늘 (Sky)', farName:'원경 (Far BG)', midName:'중경 (Mid BG)', fgName:'전경 (Foreground)',
+    skyTip:'대기산란으로 채도 낮고 밝음. 태양 반대쪽은 더 진한 파랑.',
+    farTip:'공기원근감. 채도↓ 명도↑, 하늘색 쪽으로 색상 이동.',
+    midTip:'씬의 주요 모티브. 고유색을 살리되 하늘 색조를 약간 섞음.',
+    fgTip:'가장 어둡고 채도 높음. 실루엣 효과로 깊이감 부여.',
+    skyGuideH:'180–240°', skyGuideS:'20–60%', skyGuideB:'70–95%',
+    farGuideH:'190–230°', farGuideS:'10–40%', farGuideB:'55–75%',
+    midGuideH:'고유색 ±30°', midGuideS:'40–70%', midGuideB:'35–60%',
+    fgGuideH:'고유색', fgGuideS:'60–90%', fgGuideB:'20–45%',
+    // Harmony types
+    htAuto:'자동', htAutoDesc:'현재 색상에 가장 어울리는 조화를 자동 감지',
+    htAnalogous:'유사색', htAnalogousDesc:'인접 색상 · 자연스럽고 통일된 분위기',
+    htComplementary:'보색', htComplementaryDesc:'대비 · 드라마틱, 강렬한 깊이감',
+    htSplit:'분리보색', htSplitDesc:'보색 양옆 · 균형 잡힌 부드러운 대비',
+    htTriadic:'삼각', htTriadicDesc:'120° 간격 · 생동감 있는 다채로움',
+    htMono:'단색', htMonoDesc:'같은 색상 계열 · 세련되고 통일감 있음',
+    // Harmony patterns
+    hpAnalogous:'유사색 조화', hpAnalogousDesc:'인접 색상 → 통일감, 자연스러움',
+    hpComplementary:'보색 대비', hpComplementaryDesc:'반대 색상 → 드라마틱, 긴장감',
+    hpTriadic:'삼각 분할', hpTriadicDesc:'120° 간격 → 균형, 생동감',
+    hpSplit:'분리보색', hpSplitDesc:'보색 양옆 → 부드러운 대비',
+    // Presets
+    pGolden:'황혼 골든아워', pGoldenMood:'따뜻함, 향수, 감성',
+    pNight:'심야 도시', pNightMood:'고독, 긴장, 누아르',
+    pFoggy:'안개 아침', pFoggyMood:'고요, 신비, 몽환',
+    pFantasy:'판타지 마법', pFantasyMood:'경이, 신비, 초현실',
+    pWinter:'설원 냉랭', pWinterMood:'냉정, 고독, 청결',
+    pSummer:'여름 낮', pSummerMood:'활기, 생동, 청량',
+    // Suggested tags
+    tags:['벚꽃 봄비','사이버펑크 네온','눈 내리는 숲','석양 바다','폐허 공장','심우주','새벽 안개','여름 숲속'],
+    // Analyze zones
+    zoneSky:'하늘', zoneFar:'원경', zoneMid:'중경', zoneFg:'전경',
+    // Keyword input placeholder
+    kwPlaceholder:'키워드 입력 예: 벚꽃 봄비, 폐허 사막, 사이버펑크 도시…',
+    kwAutoGenerated:'키워드 자동 생성',
+    // Toasts
+    toastPreset:(name)=>`"${name}" 프리셋 적용됨`,
+    toastHarmonize:(name)=>`${name} 보정 적용됨`,
+    toastPreviewHarmonize:(name)=>`미리보기: ${name} — 확정하려면 "보정 적용"`,
+    toastUndo:'원래 색상으로 되돌렸습니다',
+    toastLayerMove:'레이어 순서 변경됨',
+    toastKeywordApplied:'키워드 팔레트 적용됨',
+    toastHarmony:'색조 조화 적용됨',
+    toastAnalyzeApply:(zone)=>`${zone} 색상 적용됨`,
+    toastAnalyzeAll:'이미지 분석 색상 전체 적용됨',
+    toastCSS:'CSS 변수 복사됨',
+    toastJSON:'JSON 복사됨',
+    toastCopyAll:'전체 가이드 복사됨',
+    toastAiError:(msg)=>`AI 오류: ${msg}`,
+    toastAiApiKey:'API 키를 먼저 입력하세요',
+    exportHeader:'=== 씬 무드보드 컬러 가이드 ===',
+    exportRecommended:'권장',
+  },
+  en: {
+    appTitle: 'Scene Moodboard Helper',
+    appSubtitle: 'Background Layer Visualizer & HSB Color Guide',
+    ratio: 'Ratio', mood: 'Mood', clickLayer: 'Click a layer to select',
+    generate: 'Generate', local: 'Local',
+    editingSuffix: 'editing',
+    r169:'16:9 Wide', r43:'4:3', r219:'21:9 Cinematic', r11:'1:1 Square',
+    moodCustom:'Custom', moodGolden:'Golden Hour', moodNight:'Night City',
+    moodFoggy:'Foggy Morning', moodFantasy:'Fantasy Magic', moodWinter:'Snowy Winter', moodSummer:'Summer Day',
+    ptHSB:'🎛 Layer Color Adjust', ptHarmonize:'🎯 Auto Color Correction',
+    ptLayerGuide:'📐 Layer Color Guide', ptHarmonyPattern:'🌈 Color Harmony Patterns',
+    ptPreset:'✨ Scene Mood Presets', ptExport:'💾 Export',
+    ptAnalyze:'🖼 Image Analysis · Color Extract',
+    hsbH:'Hue (H)', hsbS:'Saturation (S)', hsbB:'Brightness (B)', hsbRange:'Suggested:',
+    noSelection:'Click a layer in the scene',
+    colorHarmony:'Color Harmony', strLabel:'Strength',
+    strWeak:'Subtle', strBal:'Balanced', strStr:'Strong',
+    previewBtn:'Preview', applyBtn:'Apply', undoBtn:'Undo',
+    detectedLabel:'Detected:', harmonizeConfirmed:'Correction confirmed',
+    exportCSS:'CSS Vars', exportJSON:'JSON', exportCopy:'Copy All',
+    analyzeToggleOpen:'Expand ▾', analyzeToggleClose:'Collapse ▴',
+    analyzeDropBold:'Drag & drop or click', analyzeDropSuffix:' to upload an image',
+    analyzeDropSub:'PNG · JPG · WEBP — auto-extracts dominant color per zone',
+    analyzeApplyAll:'Apply All', analyzeReset:'Reset', analyzeApplyZone:'Apply',
+    // Layers
+    skyName:'Sky', farName:'Far BG', midName:'Mid BG', fgName:'Foreground',
+    skyTip:'Atmospheric scatter: low saturation, high brightness. Deeper blue opposite the sun.',
+    farTip:'Aerial perspective: lower sat, higher brightness, hue shifts toward sky.',
+    midTip:'Main scene subject. Keep local color, slightly blend sky hue.',
+    fgTip:'Darkest, most saturated. Silhouette effect adds depth.',
+    skyGuideH:'180–240°', skyGuideS:'20–60%', skyGuideB:'70–95%',
+    farGuideH:'190–230°', farGuideS:'10–40%', farGuideB:'55–75%',
+    midGuideH:'Local ±30°', midGuideS:'40–70%', midGuideB:'35–60%',
+    fgGuideH:'Local color', fgGuideS:'60–90%', fgGuideB:'20–45%',
+    // Harmony types
+    htAuto:'Auto', htAutoDesc:'Auto-detects the best harmony for current colors',
+    htAnalogous:'Analogous', htAnalogousDesc:'Adjacent hues · Natural, unified mood',
+    htComplementary:'Complementary', htComplementaryDesc:'Opposite hues · Dramatic depth',
+    htSplit:'Split-comp', htSplitDesc:'Near-complementary · Balanced contrast',
+    htTriadic:'Triadic', htTriadicDesc:'120° apart · Vibrant, balanced variety',
+    htMono:'Monochrome', htMonoDesc:'Same hue family · Refined and unified',
+    // Harmony patterns
+    hpAnalogous:'Analogous', hpAnalogousDesc:'Adjacent hues → Unity, naturalness',
+    hpComplementary:'Complementary', hpComplementaryDesc:'Opposite hues → Dramatic tension',
+    hpTriadic:'Triadic', hpTriadicDesc:'120° intervals → Balance, vibrancy',
+    hpSplit:'Split-comp', hpSplitDesc:'Near-opposite hues → Soft contrast',
+    // Presets
+    pGolden:'Golden Hour', pGoldenMood:'Warmth, nostalgia, emotion',
+    pNight:'Night City', pNightMood:'Solitude, tension, noir',
+    pFoggy:'Foggy Morning', pFoggyMood:'Calm, mystery, dreamy',
+    pFantasy:'Fantasy Magic', pFantasyMood:'Wonder, mystery, surreal',
+    pWinter:'Snowy Winter', pWinterMood:'Cold, solitude, clarity',
+    pSummer:'Summer Day', pSummerMood:'Energy, vitality, freshness',
+    // Suggested tags
+    tags:['Cherry blossom rain','Cyberpunk neon','Snowy forest','Sunset sea','Abandoned factory','Deep space','Dawn mist','Summer forest'],
+    // Analyze zones
+    zoneSky:'Sky', zoneFar:'Far BG', zoneMid:'Mid BG', zoneFg:'Foreground',
+    // Keyword input placeholder
+    kwPlaceholder:'Enter keywords e.g. cherry blossom, desert ruins, cyberpunk city…',
+    kwAutoGenerated:'Auto-generated palette',
+    // Toasts
+    toastPreset:(name)=>`"${name}" preset applied`,
+    toastHarmonize:(name)=>`${name} correction applied`,
+    toastPreviewHarmonize:(name)=>`Preview: ${name} — click "Apply" to confirm`,
+    toastUndo:'Reverted to original colors',
+    toastLayerMove:'Layer order changed',
+    toastKeywordApplied:'Keyword palette applied',
+    toastHarmony:'Color harmony applied',
+    toastAnalyzeApply:(zone)=>`${zone} color applied`,
+    toastAnalyzeAll:'Image analysis colors applied to all layers',
+    toastCSS:'CSS variables copied',
+    toastJSON:'JSON copied',
+    toastCopyAll:'Full guide copied',
+    toastAiError:(msg)=>`AI error: ${msg}`,
+    toastAiApiKey:'Please enter your API key first',
+    exportHeader:'=== Scene Moodboard Color Guide ===',
+    exportRecommended:'Suggested',
+  },
+};
+
+let currentLang = localStorage.getItem('smb_lang') || 'ko';
+let T = LANGS[currentLang];
+
+function setLang(lang) {
+  currentLang = lang;
+  T = LANGS[lang];
+  localStorage.setItem('smb_lang', lang);
+  document.documentElement.lang = lang;
+  document.getElementById('btn-ko').classList.toggle('active', lang === 'ko');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  applyLangToDOM();
+  // 동적 콘텐츠 재렌더
+  renderAll();
+  renderPresets();
+  renderKeywordTags();
+  renderHarmonyTypeGrid();
+  refreshHarmonizePreview();
+  // keyword input placeholder
+  const kw = document.getElementById('keyword-input');
+  if (kw) kw.placeholder = T.kwPlaceholder;
+  // analyze toggle btn
+  const atb = document.getElementById('analyze-toggle-btn');
+  const isOpen = document.getElementById('analyze-panel').classList.contains('open');
+  if (atb) atb.textContent = isOpen ? T.analyzeToggleClose : T.analyzeToggleOpen;
+}
+
+function applyLangToDOM() {
+  // data-i18n: textContent
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = T[el.dataset.i18n];
+    if (v !== undefined) el.textContent = v;
+  });
+  // data-i18n-opt: select options
+  document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+    const v = T[el.dataset.i18nOpt];
+    if (v !== undefined) el.textContent = v;
+  });
+}
+
 // ── 데이터 모델 ──────────────────────────────────────────────
 
 const LAYERS = [
   {
-    id: 'sky',
-    name: '하늘 (Sky)',
-    emoji: '☁️',
-    hsb: { h: 210, s: 45, b: 85 },
-    zIndex: 1,
-    heightStart: 0,
-    heightEnd: 45,
-    guide: { hRange: '180–240°', sRange: '20–60%', bRange: '70–95%' },
-    tip: '대기산란으로 채도 낮고 밝음. 태양 반대쪽은 더 진한 파랑.',
+    id: 'sky', emoji: '☁️',
+    get name() { return T.skyName; },
+    get tip()  { return T.skyTip; },
+    get guide(){ return { hRange: T.skyGuideH, sRange: T.skyGuideS, bRange: T.skyGuideB }; },
+    hsb: { h: 210, s: 45, b: 85 }, zIndex: 1, heightStart: 0, heightEnd: 45,
   },
   {
-    id: 'far',
-    name: '원경 (Far BG)',
-    emoji: '🏔️',
-    hsb: { h: 220, s: 30, b: 65 },
-    zIndex: 2,
-    heightStart: 35,
-    heightEnd: 70,
-    guide: { hRange: '190–230°', sRange: '10–40%', bRange: '55–75%' },
-    tip: '공기원근감. 채도↓ 명도↑, 하늘색 쪽으로 색상 이동.',
+    id: 'far', emoji: '🏔️',
+    get name() { return T.farName; },
+    get tip()  { return T.farTip; },
+    get guide(){ return { hRange: T.farGuideH, sRange: T.farGuideS, bRange: T.farGuideB }; },
+    hsb: { h: 220, s: 30, b: 65 }, zIndex: 2, heightStart: 35, heightEnd: 70,
   },
   {
-    id: 'mid',
-    name: '중경 (Mid BG)',
-    emoji: '🌲',
-    hsb: { h: 150, s: 55, b: 45 },
-    zIndex: 3,
-    heightStart: 58,
-    heightEnd: 88,
-    guide: { hRange: '고유색 ±30°', sRange: '40–70%', bRange: '35–60%' },
-    tip: '씬의 주요 모티브. 고유색을 살리되 하늘 색조를 약간 섞음.',
+    id: 'mid', emoji: '🌲',
+    get name() { return T.midName; },
+    get tip()  { return T.midTip; },
+    get guide(){ return { hRange: T.midGuideH, sRange: T.midGuideS, bRange: T.midGuideB }; },
+    hsb: { h: 150, s: 55, b: 45 }, zIndex: 3, heightStart: 58, heightEnd: 88,
   },
   {
-    id: 'fg',
-    name: '전경 (Foreground)',
-    emoji: '🌿',
-    hsb: { h: 130, s: 70, b: 30 },
-    zIndex: 4,
-    heightStart: 78,
-    heightEnd: 100,
-    guide: { hRange: '고유색', sRange: '60–90%', bRange: '20–45%' },
-    tip: '가장 어둡고 채도 높음. 실루엣 효과로 깊이감 부여.',
+    id: 'fg', emoji: '🌿',
+    get name() { return T.fgName; },
+    get tip()  { return T.fgTip; },
+    get guide(){ return { hRange: T.fgGuideH, sRange: T.fgGuideS, bRange: T.fgGuideB }; },
+    hsb: { h: 130, s: 70, b: 30 }, zIndex: 4, heightStart: 78, heightEnd: 100,
   },
 ];
 
 const PRESETS = [
   {
-    name: '황혼 골든아워',
+    get name() { return T.pGolden; },
     id: 'golden',
-    mood: '따뜻함, 향수, 감성',
+    get mood() { return T.pGoldenMood; },
     layers: [
       { h: 28, s: 75, b: 92 },
       { h: 20, s: 50, b: 70 },
@@ -1018,9 +1228,9 @@ const PRESETS = [
     ]
   },
   {
-    name: '심야 도시',
+    get name() { return T.pNight; },
     id: 'night',
-    mood: '고독, 긴장, 누아르',
+    get mood() { return T.pNightMood; },
     layers: [
       { h: 225, s: 80, b: 18 },
       { h: 240, s: 50, b: 30 },
@@ -1029,9 +1239,9 @@ const PRESETS = [
     ]
   },
   {
-    name: '안개 아침',
+    get name() { return T.pFoggy; },
     id: 'foggy',
-    mood: '고요, 신비, 몽환',
+    get mood() { return T.pFoggyMood; },
     layers: [
       { h: 195, s: 20, b: 90 },
       { h: 200, s: 15, b: 75 },
@@ -1040,9 +1250,9 @@ const PRESETS = [
     ]
   },
   {
-    name: '판타지 마법',
+    get name() { return T.pFantasy; },
     id: 'fantasy',
-    mood: '경이, 신비, 초현실',
+    get mood() { return T.pFantasyMood; },
     layers: [
       { h: 280, s: 70, b: 40 },
       { h: 260, s: 55, b: 55 },
@@ -1076,23 +1286,23 @@ const PRESETS = [
 
 const HARMONIES = [
   {
-    name: '유사색 조화',
-    desc: '인접 색상 → 통일감, 자연스러움',
+    get name() { return T.hpAnalogous; },
+    get desc() { return T.hpAnalogousDesc; },
     fn: (h) => [h, (h+25)%360, (h+50)%360, (h+15)%360],
   },
   {
-    name: '보색 대비',
-    desc: '반대 색상 → 드라마틱, 긴장감',
+    get name() { return T.hpComplementary; },
+    get desc() { return T.hpComplementaryDesc; },
     fn: (h) => [h, (h+180)%360, (h+30)%360, (h+210)%360],
   },
   {
-    name: '삼각 분할',
-    desc: '120° 간격 → 균형, 생동감',
+    get name() { return T.hpTriadic; },
+    get desc() { return T.hpTriadicDesc; },
     fn: (h) => [h, (h+120)%360, (h+240)%360, (h+60)%360],
   },
   {
-    name: '분리보색',
-    desc: '보색 양옆 → 부드러운 대비',
+    get name() { return T.hpSplit; },
+    get desc() { return T.hpSplitDesc; },
     fn: (h) => [h, (h+150)%360, (h+210)%360, (h+30)%360],
   },
 ];
@@ -1177,8 +1387,7 @@ const KEYWORD_DB = [
   },
 ];
 
-// 추천 태그
-const SUGGESTED_TAGS = ['벚꽃 봄비', '사이버펑크 네온', '눈 내리는 숲', '석양 바다', '폐허 공장', '심우주', '새벽 안개', '여름 숲속'];
+// 추천 태그 (T.tags 에서 가져옴)
 
 let keywordGeneratedLayers = null;
 let currentMode = 'local'; // 'local' | 'ai'
@@ -1205,11 +1414,11 @@ function updateApiStatus(key) {
   const el = document.getElementById('api-status');
   const bar = document.getElementById('api-key-bar');
   if (key.startsWith('sk-ant-') && key.length > 20) {
-    el.textContent = '✓ 준비됨';
+    el.textContent = currentLang === 'ko' ? '✓ 준비됨' : '✓ Ready';
     el.className = 'api-status ok';
     bar.classList.add('connected');
   } else if (key.length > 0) {
-    el.textContent = '형식 확인';
+    el.textContent = currentLang === 'ko' ? '형식 확인' : 'Check format';
     el.className = 'api-status err';
     bar.classList.remove('connected');
   } else {
@@ -1221,7 +1430,7 @@ function updateApiStatus(key) {
 async function generateFromKeywordAI(keyword) {
   const apiKey = localStorage.getItem('anthropic_api_key') || '';
   if (!apiKey.startsWith('sk-ant-')) {
-    showToast('API 키를 먼저 입력하세요');
+    showToast(T.toastAiApiKey);
     return;
   }
 
@@ -1246,7 +1455,7 @@ async function generateFromKeywordAI(keyword) {
     ).join('');
     document.getElementById('keyword-result').classList.add('show');
   } catch (e) {
-    showToast('AI 오류: ' + e.message.slice(0, 60));
+    showToast(T.toastAiError(e.message.slice(0, 50)));
   } finally {
     btn.innerHTML = '생성';
     btn.disabled = false;
@@ -1256,7 +1465,7 @@ async function generateFromKeywordAI(keyword) {
 function renderKeywordTags() {
   const container = document.getElementById('keyword-tags');
   container.innerHTML = '';
-  SUGGESTED_TAGS.forEach(tag => {
+  T.tags.forEach(tag => {
     const el = document.createElement('span');
     el.className = 'keyword-tag';
     el.textContent = tag;
@@ -1352,7 +1561,7 @@ function generateGenericPalette(text) {
 
   return {
     name: label,
-    mood: '키워드 자동 생성',
+    mood: T.kwAutoGenerated,
     layers: [
       { h: baseH,              s: Math.max(sBase - 15, 10), b: Math.min(bBase + 18, 98) },
       { h: (baseH + 12) % 360, s: Math.max(sBase - 10, 10), b: bBase },
@@ -1369,17 +1578,17 @@ function applyKeywordResult() {
   });
   if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
   else renderAll();
-  showToast('키워드 팔레트 적용됨');
+  showToast(T.toastKeywordApplied);
 }
 
 // ── 이미지 분석 ──────────────────────────────────────────────────
 
 // 존 정의: 이미지 세로 비율 기준 (top%, height%)
 const ANALYZE_ZONES = [
-  { id: 'sky', label: '하늘',  emoji: '☁️', top: 0,    h: 0.28, layerIdx: 0, color: 'rgba(100,160,255,0.25)' },
-  { id: 'far', label: '원경',  emoji: '🏔️', top: 0.28, h: 0.22, layerIdx: 1, color: 'rgba(160,200,160,0.20)' },
-  { id: 'mid', label: '중경',  emoji: '🌲', top: 0.50, h: 0.25, layerIdx: 2, color: 'rgba(100,180,100,0.18)' },
-  { id: 'fg',  label: '전경',  emoji: '🌿', top: 0.75, h: 0.25, layerIdx: 3, color: 'rgba(60,120,60,0.22)'  },
+  { id:'sky', get label(){ return T.zoneSky; }, emoji:'☁️', top:0,    h:0.28, layerIdx:0, color:'rgba(100,160,255,0.25)' },
+  { id:'far', get label(){ return T.zoneFar; }, emoji:'🏔️', top:0.28, h:0.22, layerIdx:1, color:'rgba(160,200,160,0.20)' },
+  { id:'mid', get label(){ return T.zoneMid; }, emoji:'🌲', top:0.50, h:0.25, layerIdx:2, color:'rgba(100,180,100,0.18)' },
+  { id:'fg',  get label(){ return T.zoneFg;  }, emoji:'🌿', top:0.75, h:0.25, layerIdx:3, color:'rgba(60,120,60,0.22)'  },
 ];
 
 let analyzedColors = null; // [{ primary, palette:[] }] × 4 존
@@ -1584,7 +1793,7 @@ function applySingleAnalyzed(zoneIdx, paletteIdx) {
   if (activeLayerIdx === zone.layerIdx) selectLayer(zone.layerIdx);
   else renderAll();
   refreshHarmonizePreview();
-  showToast(`${zone.emoji} ${zone.label} 색상 적용됨`);
+  showToast(T.toastAnalyzeApply(`${zone.emoji} ${zone.label}`));
 }
 
 function applyAllAnalyzed() {
@@ -1599,14 +1808,14 @@ function applyAllAnalyzed() {
   if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
   else renderAll();
   refreshHarmonizePreview();
-  showToast('이미지 분석 색상 전체 적용됨');
+  showToast(T.toastAnalyzeAll);
 }
 
 function toggleAnalyzePanel() {
   const panel = document.getElementById('analyze-panel');
   const btn   = document.getElementById('analyze-toggle-btn');
   const isOpen = panel.classList.toggle('open');
-  btn.textContent = isOpen ? '접기 ▴' : '펼치기 ▾';
+  btn.textContent = isOpen ? T.analyzeToggleClose : T.analyzeToggleOpen;
   if (isOpen) {
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
@@ -1627,48 +1836,12 @@ function resetAnalyze() {
 
 // 조화 타입 정의: offsets[i] = 레이어 i의 하늘 색조 기준 목표 오프셋
 const HARMONY_TYPES = [
-  {
-    id: 'auto',    label: '자동',    emoji: '✦',
-    desc: '현재 색상에 가장 어울리는 조화를 자동 감지',
-    offsets: null,  // 런타임에 계산
-    huePull: 0.55,
-    dots: null,
-  },
-  {
-    id: 'analogous', label: '유사색', emoji: '🌊',
-    desc: '인접 색상 · 자연스럽고 통일된 분위기',
-    offsets: [0, 18, -18, 30],
-    huePull: 0.55,
-    dots: [0, 18, -18, 30],
-  },
-  {
-    id: 'complementary', label: '보색', emoji: '⚡',
-    desc: '대비 · 드라마틱, 강렬한 깊이감',
-    offsets: [0, 50, 130, 180],
-    huePull: 0.50,
-    dots: [0, 90, 180],
-  },
-  {
-    id: 'split', label: '분리보색', emoji: '🌗',
-    desc: '보색 양옆 · 균형 잡힌 부드러운 대비',
-    offsets: [0, 30, 150, 210],
-    huePull: 0.50,
-    dots: [0, 150, 210],
-  },
-  {
-    id: 'triadic', label: '삼각', emoji: '△',
-    desc: '120° 간격 · 생동감 있는 다채로움',
-    offsets: [0, 40, 120, 240],
-    huePull: 0.45,
-    dots: [0, 120, 240],
-  },
-  {
-    id: 'mono', label: '단색', emoji: '◎',
-    desc: '같은 색상 계열 · 세련되고 통일감 있음',
-    offsets: [0, 8, -8, 12],
-    huePull: 0.70,
-    dots: [0, 8, -8],
-  },
+  { id:'auto',          emoji:'✦', get label(){return T.htAuto;},          get desc(){return T.htAutoDesc;},          offsets:null,         huePull:0.55, dots:null },
+  { id:'analogous',     emoji:'🌊', get label(){return T.htAnalogous;},     get desc(){return T.htAnalogousDesc;},     offsets:[0,18,-18,30], huePull:0.55, dots:[0,18,-18,30] },
+  { id:'complementary', emoji:'⚡', get label(){return T.htComplementary;}, get desc(){return T.htComplementaryDesc;}, offsets:[0,50,130,180], huePull:0.50, dots:[0,90,180] },
+  { id:'split',         emoji:'🌗', get label(){return T.htSplit;},         get desc(){return T.htSplitDesc;},         offsets:[0,30,150,210], huePull:0.50, dots:[0,150,210] },
+  { id:'triadic',       emoji:'△', get label(){return T.htTriadic;},       get desc(){return T.htTriadicDesc;},       offsets:[0,40,120,240], huePull:0.45, dots:[0,120,240] },
+  { id:'mono',          emoji:'◎', get label(){return T.htMono;},          get desc(){return T.htMonoDesc;},          offsets:[0,8,-8,12],   huePull:0.70, dots:[0,8,-8] },
 ];
 
 let harmonizeStrength = 0.55;
@@ -1871,7 +2044,7 @@ function previewHarmonize() {
   const { result, harmType } = computeHarmonized(harmonizeStrength);
   _applyComputedResult(result);
   document.getElementById('undo-btn').style.display = '';
-  showToast(`미리보기: ${harmType.emoji} ${harmType.label} — 확정하려면 "보정 적용"`);
+  showToast(T.toastPreviewHarmonize(`${harmType.emoji} ${harmType.label}`));
 }
 
 function applyHarmonize() {
@@ -1880,11 +2053,11 @@ function applyHarmonize() {
     const { result, harmType } = computeHarmonized(harmonizeStrength);
     _applyComputedResult(result);
     document.getElementById('undo-btn').style.display = '';
-    showToast(`${harmType.emoji} ${harmType.label} 보정 적용됨`);
+    showToast(T.toastHarmonize(`${harmType.emoji} ${harmType.label}`));
   } else {
     harmonizePreviewActive = false;
     refreshHarmonizePreview();
-    showToast('보정 확정됨');
+    showToast(T.harmonizeConfirmed);
   }
 }
 
@@ -1901,7 +2074,7 @@ function undoHarmonize() {
   else renderAll();
   refreshHarmonizePreview();
   document.getElementById('undo-btn').style.display = 'none';
-  showToast('원래 색상으로 되돌렸습니다');
+  showToast(T.toastUndo);
 }
 
 // ── 상태 ──────────────────────────────────────────────────────
@@ -2114,7 +2287,7 @@ function moveLayer(e, i, dir) {
   if (activeLayerIdx === i) activeLayerIdx = j;
   else if (activeLayerIdx === j) activeLayerIdx = i;
   renderAll();
-  showToast('레이어 순서 변경됨');
+  showToast(T.toastLayerMove);
 }
 
 function applyPreset(preset) {
@@ -2134,7 +2307,7 @@ function applyPreset(preset) {
     renderAll();
   }
   refreshHarmonizePreview();
-  showToast(`"${preset.name}" 프리셋 적용됨`);
+  showToast(T.toastPreset(preset.name));
 }
 
 function applyMoodQuick() {
@@ -2151,7 +2324,7 @@ function applyHarmony(hues) {
   });
   if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
   else renderAll();
-  showToast('색조 조화 적용됨');
+  showToast(T.toastHarmony);
 }
 
 function updateRatio() {
@@ -2184,25 +2357,25 @@ function exportCSS() {
   });
   lines.push('}');
   copyToClipboard(lines.join('\n'));
-  showToast('CSS 변수 복사됨');
+  showToast(T.toastCSS);
 }
 
 function exportJSON() {
   const data = JSON.stringify(getExportData(), null, 2);
   copyToClipboard(data);
-  showToast('JSON 복사됨');
+  showToast(T.toastJSON);
 }
 
 function copyAll() {
   const data = getExportData();
-  let text = '=== 씬 무드보드 컬러 가이드 ===\n\n';
+  let text = T.exportHeader + '\n\n';
   data.forEach(d => {
     text += `[${d.name}]\n`;
     text += `  HEX: ${d.hex}  |  HSL: ${d.hsl}\n`;
-    text += `  권장 H:${d.guide.hRange}  S:${d.guide.sRange}  B:${d.guide.bRange}\n\n`;
+    text += `  ${T.exportRecommended} H:${d.guide.hRange}  S:${d.guide.sRange}  B:${d.guide.bRange}\n\n`;
   });
   copyToClipboard(text);
-  showToast('전체 가이드 복사됨');
+  showToast(T.toastCopyAll);
 }
 
 function copyToClipboard(text) {
@@ -2234,6 +2407,12 @@ function renderAll() {
 }
 
 // ── 초기화 ────────────────────────────────────────────────────
+// 언어 초기화 (저장된 언어 적용)
+document.getElementById(currentLang === 'en' ? 'btn-en' : 'btn-ko').classList.add('active');
+document.getElementById(currentLang === 'en' ? 'btn-ko' : 'btn-en').classList.remove('active');
+document.documentElement.lang = currentLang;
+applyLangToDOM();
+document.getElementById('keyword-input').placeholder = T.kwPlaceholder;
 renderAll();
 renderPresets();
 renderKeywordTags();
