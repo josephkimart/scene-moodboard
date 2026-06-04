@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>씬 무드보드 레이아웃 도우미</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232635;
+    --border: #2e3248;
+    --text: #e2e4f0;
+    --text-dim: #7c80a0;
+    --accent: #5b6ef5;
+    --accent2: #a06ef5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+  }
+
+  header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  header p { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+  .icon-badge {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    height: calc(100vh - 73px);
+  }
+
+  /* ── 왼쪽: 씬 캔버스 ── */
+  .canvas-area {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .toolbar label { color: var(--text-dim); font-size: 12px; }
+
+  select, button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  select:hover, button:hover { border-color: var(--accent); }
+
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  button.primary:hover { background: #4a5de0; }
+
+  /* ── 이미지 분석 ── */
+  /* ── 이미지 분석 패널 (좌측 하단) ── */
+  .analyze-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .analyze-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .analyze-panel.open .analyze-panel-header {
+    border-bottom-color: var(--border);
+  }
+  .analyze-panel-header:hover { background: var(--surface2); }
+  .analyze-panel-title { font-size: 13px; font-weight: 700; }
+
+  .analyze-toggle-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 11px; font-weight: 600;
+    border-radius: 6px; padding: 3px 10px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .analyze-toggle-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .analyze-panel-body {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+  .analyze-panel.open .analyze-panel-body { display: flex; }
+  .analyze-drop.hidden { display: none; }
+
+  .analyze-drop {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .analyze-drop:hover, .analyze-drop.drag-over {
+    border-color: var(--accent);
+    background: rgba(91,110,245,0.07);
+  }
+  .analyze-drop input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .analyze-drop-icon { font-size: 36px; margin-bottom: 8px; }
+  .analyze-drop p  { font-size: 13px; color: var(--text-dim); margin: 0; }
+  .analyze-drop p b { color: var(--text); }
+
+  .analyze-workspace {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .analyze-workspace.show { display: flex; }
+
+  /* 이미지 + 결과 가로 배치 */
+  .analyze-workspace-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .analyze-img-wrap {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    line-height: 0;
+  }
+  .analyze-img-wrap img { width: 100%; display: block; }
+
+  /* 존 오버레이 */
+  .zone-overlay {
+    position: absolute; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0 8px;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .zone-overlay-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.25);
+    padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* 분석 결과 카드 */
+  .analyze-results {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ar-row {
+    display: grid;
+    grid-template-columns: 10px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    transition: border-color 0.15s;
+  }
+  .ar-row:hover { border-color: var(--accent); }
+
+  .ar-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ar-swatch-group { display: flex; gap: 3px; }
+  .ar-swatch {
+    width: 22px; height: 28px; border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    cursor: pointer; transition: transform 0.15s;
+    position: relative;
+  }
+  .ar-swatch:hover { transform: scale(1.12); z-index: 1; }
+  .ar-swatch[title]:hover::after {
+    content: attr(title);
+    position: absolute; bottom: calc(100% + 4px); left: 50%;
+    transform: translateX(-50%);
+    background: #000; color: #fff;
+    font-size: 9px; padding: 2px 5px; border-radius: 4px;
+    white-space: nowrap; pointer-events: none;
+  }
+  .ar-info { min-width: 0; }
+  .ar-info b { font-size: 11px; display: block; }
+  .ar-info span { font-size: 10px; color: var(--text-dim); }
+  .ar-apply {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); font-size: 10px; font-weight: 600;
+    padding: 4px 8px; cursor: pointer; white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .ar-apply:hover { border-color: var(--accent); color: var(--text); background: rgba(91,110,245,0.1); }
+
+  .analyze-footer { display: flex; gap: 6px; }
+  .analyze-footer button { flex: 1; font-size: 12px; padding: 7px 0; }
+
+  /* ── 씬 프리뷰 ── */
+  .scene-preview {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+    height: 320px;
+    cursor: pointer;
+  }
+
+  .layer-band {
+    position: absolute;
+    left: 0; right: 0;
+    transition: all 0.4s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    align-items: flex-end;
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .layer-band:hover { filter: brightness(1.12); }
+  .layer-band.active { outline: 2px solid #fff; outline-offset: -2px; z-index: 10 !important; }
+
+  .layer-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+
+  /* ── 레이어 슬롯 리스트 ── */
+  .layer-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .layer-slot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .layer-slot:hover, .layer-slot.active {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .slot-swatch {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+    transition: transform 0.15s;
+  }
+  .layer-slot:hover .slot-swatch { transform: scale(1.08); }
+
+  .slot-info { overflow: hidden; }
+  .slot-name { font-weight: 600; font-size: 13px; }
+  .slot-sub { color: var(--text-dim); font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .slot-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 6px;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; padding: 0;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--text); background: var(--surface2); }
+
+  /* ── 오른쪽: 컨트롤 패널 ── */
+  .panel {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  /* HSB 슬라이더 */
+  .hsb-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .hsb-row { display: flex; flex-direction: column; gap: 4px; }
+
+  .hsb-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .hsb-row label span { color: var(--text); font-weight: 600; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  #slider-h { background: linear-gradient(to right, hsl(0,80%,50%), hsl(60,80%,50%), hsl(120,80%,50%), hsl(180,80%,50%), hsl(240,80%,50%), hsl(300,80%,50%), hsl(360,80%,50%)); }
+  #slider-s { background: linear-gradient(to right, hsl(210,0%,50%), hsl(210,100%,50%)); }
+  #slider-b { background: linear-gradient(to right, #000, #fff); }
+
+  .color-preview-strip {
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-top: 12px;
+    transition: background 0.2s;
+  }
+
+  /* 색조 가이드 */
+  .guide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .guide-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .guide-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .guide-swatch-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+  .guide-swatch {
+    height: 20px;
+    flex: 1;
+    border-radius: 4px;
+  }
+  .guide-name { font-size: 12px; font-weight: 600; }
+  .guide-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; line-height: 1.4; }
+
+  /* 분위기 프리셋 */
+  .preset-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .preset-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-item:hover { border-color: var(--accent); background: var(--surface2); }
+
+  .preset-swatches {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .preset-swatch {
+    width: 18px; height: 28px;
+    border-radius: 4px;
+  }
+  .preset-info { flex: 1; }
+  .preset-name { font-size: 12px; font-weight: 600; }
+  .preset-mood { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+
+  /* 레이어 가이드 뱃지 */
+  .layer-guide-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .lgr-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .lgr-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .lgr-text { font-size: 12px; }
+  .lgr-text b { display: block; }
+  .lgr-text span { color: var(--text-dim); font-size: 11px; }
+
+  /* ── 자동 보정 ── */
+  .harmonize-section { display: flex; flex-direction: column; gap: 10px; }
+
+  .strength-track {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .str-btn {
+    flex: 1; padding: 6px 0; font-size: 11px; font-weight: 600;
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .str-btn.active { background: var(--accent); color: #fff; }
+  .str-btn:not(.active):hover { background: var(--surface2); color: var(--text); }
+
+  /* 조화 타입 선택 */
+  .harmony-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .ht-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 7px 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; transition: all 0.15s;
+    font-size: 10px; font-weight: 600; color: var(--text-dim);
+    text-align: center; line-height: 1.2;
+  }
+  .ht-btn:hover { border-color: var(--accent); color: var(--text); }
+  .ht-btn.active { border-color: var(--accent); background: rgba(91,110,245,0.15); color: var(--text); }
+  .ht-btn .ht-dots { display: flex; gap: 2px; margin-bottom: 1px; }
+  .ht-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* 감지된 조화 뱃지 */
+  .harmony-detected {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 10px; border-radius: 8px;
+    background: rgba(91,110,245,0.1); border: 1px solid rgba(91,110,245,0.3);
+    font-size: 11px;
+  }
+  .harmony-detected .hd-label { color: var(--text-dim); }
+  .harmony-detected .hd-name  { color: var(--text); font-weight: 700; }
+  .harmony-detected .hd-desc  { color: var(--text-dim); font-size: 10px; }
+
+  .harmonize-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .hp-col { display: flex; flex-direction: column; gap: 3px; }
+  .hp-label { font-size: 10px; color: var(--text-dim); text-align: center; letter-spacing: 0.5px; }
+  .hp-swatches { display: flex; flex-direction: column; gap: 2px; }
+  .hp-swatch {
+    height: 16px; border-radius: 4px;
+    transition: background 0.3s;
+  }
+
+  .harmonize-actions { display: flex; gap: 6px; }
+  .harmonize-actions button { flex: 1; font-size: 12px; padding: 7px 0; }
+  button.danger {
+    background: none; border: 1px solid #e05c5c; color: #e05c5c;
+  }
+  button.danger:hover { background: rgba(224,92,92,0.1); border-color: #e05c5c; }
+
+  .diff-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+  .diff-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+  }
+  .diff-badge.changed { border-color: var(--accent); color: var(--accent); background: rgba(91,110,245,0.1); }
+
+  /* 내보내기 */
+  .export-row { display: flex; gap: 8px; }
+  .export-row button { flex: 1; font-size: 12px; padding: 8px 10px; }
+
+  /* 알림 토스트 */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .separator { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+  /* ── API 키 설정 ── */
+  .api-key-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+  }
+  .api-key-bar.connected { border-color: #3dba6f; }
+  .api-key-bar input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: 12px; font-family: monospace; min-width: 0;
+  }
+  .api-key-bar input::placeholder { color: var(--text-dim); font-family: inherit; }
+  .api-status { font-size: 11px; white-space: nowrap; }
+  .api-status.ok { color: #3dba6f; }
+  .api-status.err { color: #e05c5c; }
+
+  /* AI 모드 토글 */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .mode-btn {
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-btn.active { background: var(--accent); color: #fff; }
+  .mode-btn:not(.active):hover { background: var(--surface2); color: var(--text); }
+
+  /* AI 로딩 스피너 */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  /* ── 키워드 입력 ── */
+  .keyword-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.15s;
+  }
+  .keyword-bar:focus-within { border-color: var(--accent); }
+
+  .keyword-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    min-width: 0;
+  }
+  .keyword-bar input::placeholder { color: var(--text-dim); }
+
+  .keyword-bar button {
+    background: var(--accent);
+    border: none;
+    border-radius: 7px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .keyword-bar button:hover { background: #4a5de0; }
+  .keyword-bar button:disabled { background: var(--border); color: var(--text-dim); cursor: default; }
+
+  .keyword-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 0;
+  }
+  .keyword-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .keyword-tag:hover { border-color: var(--accent); color: var(--text); background: var(--surface); }
+
+  .keyword-result {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 11px;
+    padding: 12px 14px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .keyword-result.show { display: flex; }
+  .kr-header { display: flex; justify-content: space-between; align-items: center; }
+  .kr-title { font-size: 12px; font-weight: 700; }
+  .kr-mood { font-size: 11px; color: var(--text-dim); }
+  .kr-swatches { display: flex; gap: 4px; }
+  .kr-swatch { flex: 1; height: 24px; border-radius: 5px; }
+  .kr-apply {
+    background: var(--accent); border: none; border-radius: 7px;
+    color: #fff; font-size: 12px; font-weight: 600; padding: 6px 14px;
+    cursor: pointer; align-self: flex-start;
+    transition: background 0.15s;
+  }
+  .kr-apply:hover { background: #4a5de0; }
+
+  .active-layer-indicator {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .active-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon-badge">🎨</div>
+  <div>
+    <h1>씬 무드보드 레이아웃 도우미</h1>
+    <p>배경 레이어 구조 시각화 & 색조/채도/명도 가이드</p>
+  </div>
+</header>
+
+<div class="main-layout">
+  <!-- ── 왼쪽 캔버스 ── -->
+  <div class="canvas-area">
+    <div class="toolbar">
+      <label>비율</label>
+      <select id="ratio-select" onchange="updateRatio()">
+        <option value="16/9">16:9 와이드</option>
+        <option value="4/3">4:3</option>
+        <option value="21/9">21:9 시네마틱</option>
+        <option value="1/1">1:1 정방형</option>
+      </select>
+      <div class="separator"></div>
+      <label>분위기</label>
+      <select id="mood-quick" onchange="applyMoodQuick()">
+        <option value="">직접 설정</option>
+        <option value="golden">황혼 골든아워</option>
+        <option value="night">심야 도시</option>
+        <option value="foggy">안개 아침</option>
+        <option value="fantasy">판타지 마법</option>
+        <option value="winter">설원 냉랭</option>
+        <option value="summer">여름 낮</option>
+      </select>
+      <div class="separator"></div>
+      <div class="active-layer-indicator">
+        <div class="active-dot" id="active-dot"></div>
+        <span id="active-label">레이어를 클릭해 선택</span>
+      </div>
+    </div>
+
+    <!-- 키워드 입력 바 -->
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <!-- API 키 설정 (접을 수 있음) -->
+      <div id="api-key-section" style="display:none; flex-direction:column; gap:6px;">
+        <div class="api-key-bar" id="api-key-bar">
+          <span style="color:var(--text-dim); white-space:nowrap; font-size:11px;">API Key</span>
+          <input type="password" id="api-key-input" placeholder="sk-ant-…" oninput="onApiKeyChange()" />
+          <span class="api-status" id="api-status"></span>
+        </div>
+      </div>
+
+      <div class="keyword-bar">
+        <span style="font-size:16px; flex-shrink:0;">🔍</span>
+        <input type="text" id="keyword-input" placeholder="키워드 입력 예: 벚꽃 봄비, 폐허 사막, 사이버펑크 도시…"
+          onkeydown="if(event.key==='Enter') generateFromKeyword()" />
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="btn-local" onclick="setMode('local')">로컬</button>
+          <button class="mode-btn" id="btn-ai" onclick="setMode('ai')">✦ AI</button>
+        </div>
+        <button id="keyword-btn" onclick="generateFromKeyword()">생성</button>
+      </div>
+      <div class="keyword-tags" id="keyword-tags"></div>
+      <div class="keyword-result" id="keyword-result">
+        <div class="kr-header">
+          <span class="kr-title" id="kr-title"></span>
+          <span class="kr-mood" id="kr-mood"></span>
+        </div>
+        <div class="kr-swatches" id="kr-swatches"></div>
+        <button class="kr-apply" onclick="applyKeywordResult()">이 팔레트 적용</button>
+      </div>
+    </div>
+
+    <!-- 씬 프리뷰 -->
+    <div class="scene-preview" id="scene-preview">
+      <!-- 레이어 밴드는 JS로 렌더 -->
+    </div>
+
+    <!-- 레이어 슬롯 -->
+    <div class="layer-slots" id="layer-slots"></div>
+
+    <!-- 이미지 분석 -->
+    <div class="analyze-panel" id="analyze-panel">
+      <div class="analyze-panel-header">
+        <span class="analyze-panel-title">🖼 이미지 분석 · 색상 추출</span>
+        <button class="analyze-toggle-btn" id="analyze-toggle-btn" onclick="toggleAnalyzePanel()">펼치기 ▾</button>
+      </div>
+
+      <div class="analyze-panel-body" id="analyze-panel-body">
+        <!-- 드롭존 -->
+        <div class="analyze-drop" id="analyze-drop"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="onImageDrop(event)">
+          <input type="file" accept="image/*" onchange="onImageFile(event)">
+          <div class="analyze-drop-icon">📂</div>
+          <p><b>이미지를 드래그하거나 클릭</b>해서 업로드</p>
+          <p style="margin-top:4px;">PNG · JPG · WEBP — 존별 지배색 자동 추출</p>
+        </div>
+
+        <!-- 분석 결과 워크스페이스 -->
+        <div class="analyze-workspace" id="analyze-workspace">
+          <div class="analyze-workspace-inner">
+            <!-- 이미지 + 존 오버레이 -->
+            <div class="analyze-img-wrap" id="analyze-img-wrap"></div>
+            <!-- 각 존 결과 카드 -->
+            <div class="analyze-results" id="analyze-results"></div>
+          </div>
+          <!-- 하단 액션 -->
+          <div class="analyze-footer">
+            <button onclick="applyAllAnalyzed()">전체 적용</button>
+            <button onclick="resetAnalyze()" style="border-color:#e05c5c;color:#e05c5c;">초기화</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 오른쪽 패널 ── -->
+  <div class="panel">
+
+    <!-- HSB 컨트롤 -->
+    <div class="panel-section">
+      <div class="panel-title">🎛 레이어 색조 조정</div>
+      <div id="no-selection" style="color:var(--text-dim);font-size:12px;padding:8px 0;">
+        왼쪽 씬에서 레이어를 선택하세요
+      </div>
+      <div id="hsb-controls" style="display:none;">
+        <div class="hsb-group">
+          <div class="hsb-row">
+            <label>색상(H) <span id="val-h">210°</span></label>
+            <input type="range" id="slider-h" min="0" max="360" value="210" oninput="onHSBChange()">
+          </div>
+          <div class="hsb-row">
+            <label>채도(S) <span id="val-s">40%</span></label>
+            <input type="range" id="slider-s" min="0" max="100" value="40" oninput="onHSBChange()">
+          </div>
+          <div class="hsb-row">
+            <label>명도(B) <span id="val-b">70%</span></label>
+            <input type="range" id="slider-b" min="0" max="100" value="70" oninput="onHSBChange()">
+          </div>
+        </div>
+        <div class="color-preview-strip" id="color-preview-strip"></div>
+        <div style="margin-top:10px; display:flex; gap:6px; align-items:center;">
+          <div style="font-size:11px;color:var(--text-dim);">추천 범위:</div>
+          <div id="guide-badge" style="font-size:11px;color:var(--text);background:var(--surface2);padding:3px 8px;border-radius:20px;border:1px solid var(--border);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자동 보정 -->
+    <div class="panel-section">
+      <div class="panel-title">🎯 색상 자동 보정</div>
+      <div class="harmonize-section">
+
+        <!-- 색조 어울림 타입 -->
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:7px;">색조 어울림</div>
+          <div class="harmony-type-grid" id="harmony-type-grid"></div>
+        </div>
+
+        <!-- 자동 감지 뱃지 -->
+        <div class="harmony-detected" id="harmony-detected" style="display:none">
+          <span class="hd-label">감지:</span>
+          <span class="hd-name" id="hd-name"></span>
+          <span class="hd-desc" id="hd-desc"></span>
+        </div>
+
+        <!-- 보정 강도 -->
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">보정 강도</div>
+          <div class="strength-track" id="strength-track">
+            <button class="str-btn" data-v="0.25" onclick="setStrength(this)">약하게</button>
+            <button class="str-btn active" data-v="0.55" onclick="setStrength(this)">균형</button>
+            <button class="str-btn" data-v="0.85" onclick="setStrength(this)">강하게</button>
+          </div>
+        </div>
+
+        <!-- Before / After -->
+        <div class="harmonize-preview">
+          <div class="hp-col">
+            <div class="hp-label">BEFORE</div>
+            <div class="hp-swatches" id="hp-before"></div>
+          </div>
+          <div class="hp-col">
+            <div class="hp-label">AFTER</div>
+            <div class="hp-swatches" id="hp-after"></div>
+          </div>
+        </div>
+
+        <div class="diff-badges" id="diff-badges"></div>
+
+        <div class="harmonize-actions">
+          <button onclick="previewHarmonize()">미리보기</button>
+          <button class="primary" onclick="applyHarmonize()">보정 적용</button>
+          <button class="danger" id="undo-btn" onclick="undoHarmonize()" style="display:none">되돌리기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 레이어별 가이드 -->
+    <div class="panel-section">
+      <div class="panel-title">📐 레이어별 색 가이드</div>
+      <div class="layer-guide-row" id="layer-guide-row"></div>
+    </div>
+
+    <!-- 색조 조화 가이드 -->
+    <div class="panel-section">
+      <div class="panel-title">🌈 색조 조화 패턴</div>
+      <div class="guide-grid" id="harmony-grid"></div>
+    </div>
+
+    <!-- 분위기 프리셋 -->
+    <div class="panel-section">
+      <div class="panel-title">✨ 씬 분위기 프리셋</div>
+      <div class="preset-list" id="preset-list"></div>
+    </div>
+
+    <!-- 내보내기 -->
+    <div class="panel-section">
+      <div class="panel-title">💾 내보내기</div>
+      <div class="export-row">
+        <button onclick="exportCSS()">CSS 변수</button>
+        <button onclick="exportJSON()">JSON</button>
+        <button class="primary" onclick="copyAll()">클립보드 복사</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 데이터 모델 ──────────────────────────────────────────────
+
+const LAYERS = [
+  {
+    id: 'sky',
+    name: '하늘 (Sky)',
+    emoji: '☁️',
+    hsb: { h: 210, s: 45, b: 85 },
+    zIndex: 1,
+    heightStart: 0,
+    heightEnd: 45,
+    guide: { hRange: '180–240°', sRange: '20–60%', bRange: '70–95%' },
+    tip: '대기산란으로 채도 낮고 밝음. 태양 반대쪽은 더 진한 파랑.',
+  },
+  {
+    id: 'far',
+    name: '원경 (Far BG)',
+    emoji: '🏔️',
+    hsb: { h: 220, s: 30, b: 65 },
+    zIndex: 2,
+    heightStart: 35,
+    heightEnd: 70,
+    guide: { hRange: '190–230°', sRange: '10–40%', bRange: '55–75%' },
+    tip: '공기원근감. 채도↓ 명도↑, 하늘색 쪽으로 색상 이동.',
+  },
+  {
+    id: 'mid',
+    name: '중경 (Mid BG)',
+    emoji: '🌲',
+    hsb: { h: 150, s: 55, b: 45 },
+    zIndex: 3,
+    heightStart: 58,
+    heightEnd: 88,
+    guide: { hRange: '고유색 ±30°', sRange: '40–70%', bRange: '35–60%' },
+    tip: '씬의 주요 모티브. 고유색을 살리되 하늘 색조를 약간 섞음.',
+  },
+  {
+    id: 'fg',
+    name: '전경 (Foreground)',
+    emoji: '🌿',
+    hsb: { h: 130, s: 70, b: 30 },
+    zIndex: 4,
+    heightStart: 78,
+    heightEnd: 100,
+    guide: { hRange: '고유색', sRange: '60–90%', bRange: '20–45%' },
+    tip: '가장 어둡고 채도 높음. 실루엣 효과로 깊이감 부여.',
+  },
+];
+
+const PRESETS = [
+  {
+    name: '황혼 골든아워',
+    id: 'golden',
+    mood: '따뜻함, 향수, 감성',
+    layers: [
+      { h: 28, s: 75, b: 92 },
+      { h: 20, s: 50, b: 70 },
+      { h: 35, s: 60, b: 42 },
+      { h: 15, s: 80, b: 22 },
+    ]
+  },
+  {
+    name: '심야 도시',
+    id: 'night',
+    mood: '고독, 긴장, 누아르',
+    layers: [
+      { h: 225, s: 80, b: 18 },
+      { h: 240, s: 50, b: 30 },
+      { h: 260, s: 40, b: 22 },
+      { h: 220, s: 20, b: 10 },
+    ]
+  },
+  {
+    name: '안개 아침',
+    id: 'foggy',
+    mood: '고요, 신비, 몽환',
+    layers: [
+      { h: 195, s: 20, b: 90 },
+      { h: 200, s: 15, b: 75 },
+      { h: 190, s: 18, b: 58 },
+      { h: 185, s: 25, b: 35 },
+    ]
+  },
+  {
+    name: '판타지 마법',
+    id: 'fantasy',
+    mood: '경이, 신비, 초현실',
+    layers: [
+      { h: 280, s: 70, b: 40 },
+      { h: 260, s: 55, b: 55 },
+      { h: 300, s: 65, b: 38 },
+      { h: 270, s: 80, b: 20 },
+    ]
+  },
+  {
+    name: '설원 냉랭',
+    id: 'winter',
+    mood: '냉정, 고독, 청결',
+    layers: [
+      { h: 200, s: 30, b: 95 },
+      { h: 205, s: 20, b: 80 },
+      { h: 195, s: 25, b: 62 },
+      { h: 210, s: 35, b: 40 },
+    ]
+  },
+  {
+    name: '여름 낮',
+    id: 'summer',
+    mood: '활기, 생동, 청량',
+    layers: [
+      { h: 198, s: 65, b: 98 },
+      { h: 185, s: 40, b: 80 },
+      { h: 135, s: 70, b: 55 },
+      { h: 115, s: 80, b: 28 },
+    ]
+  },
+];
+
+const HARMONIES = [
+  {
+    name: '유사색 조화',
+    desc: '인접 색상 → 통일감, 자연스러움',
+    fn: (h) => [h, (h+25)%360, (h+50)%360, (h+15)%360],
+  },
+  {
+    name: '보색 대비',
+    desc: '반대 색상 → 드라마틱, 긴장감',
+    fn: (h) => [h, (h+180)%360, (h+30)%360, (h+210)%360],
+  },
+  {
+    name: '삼각 분할',
+    desc: '120° 간격 → 균형, 생동감',
+    fn: (h) => [h, (h+120)%360, (h+240)%360, (h+60)%360],
+  },
+  {
+    name: '분리보색',
+    desc: '보색 양옆 → 부드러운 대비',
+    fn: (h) => [h, (h+150)%360, (h+210)%360, (h+30)%360],
+  },
+];
+
+// ── 키워드 사전 ──────────────────────────────────────────────
+// 각 엔트리: { keywords[], name, mood, layers[{h,s,b}×4] }
+const KEYWORD_DB = [
+  {
+    keywords: ['벚꽃','봄','cherry','spring','sakura','분홍','핑크'],
+    name: '벚꽃 봄날', mood: '설렘, 부드러움, 낭만',
+    layers: [{h:340,s:25,b:96},{h:340,s:18,b:82},{h:350,s:35,b:70},{h:330,s:50,b:45}],
+  },
+  {
+    keywords: ['비','rain','빗','장마','우울','gray','grey','회색'],
+    name: '빗속 오후', mood: '차분함, 우수, 고요',
+    layers: [{h:210,s:18,b:72},{h:215,s:14,b:58},{h:205,s:20,b:40},{h:200,s:22,b:22}],
+  },
+  {
+    keywords: ['사막','desert','모래','황토','건조','열사'],
+    name: '사막 낮', mood: '고독, 드넓음, 뜨거움',
+    layers: [{h:38,s:55,b:96},{h:32,s:45,b:80},{h:28,s:60,b:58},{h:22,s:70,b:35}],
+  },
+  {
+    keywords: ['폐허','abandoned','rust','녹슨','공장','산업','인더스트리'],
+    name: '폐허 공장', mood: '황폐함, 긴장, 묵직함',
+    layers: [{h:200,s:20,b:55},{h:195,s:15,b:38},{h:25,s:40,b:32},{h:20,s:55,b:18}],
+  },
+  {
+    keywords: ['사이버펑크','cyberpunk','네온','neon','미래','future','SF'],
+    name: '사이버펑크 시티', mood: '긴장, 화려함, 혼돈',
+    layers: [{h:285,s:90,b:20},{h:300,s:80,b:35},{h:200,s:95,b:28},{h:180,s:100,b:15}],
+  },
+  {
+    keywords: ['숲','forest','jungle','나무','green','녹색','여름숲'],
+    name: '여름 숲속', mood: '생명력, 청량함, 고요',
+    layers: [{h:185,s:50,b:88},{h:160,s:40,b:65},{h:130,s:65,b:45},{h:110,s:75,b:25}],
+  },
+  {
+    keywords: ['눈','snow','설원','blizzard','nordic','북유럽','겨울'],
+    name: '눈 내리는 겨울', mood: '냉정, 고독, 청결',
+    layers: [{h:205,s:28,b:96},{h:200,s:18,b:80},{h:195,s:22,b:60},{h:210,s:32,b:38}],
+  },
+  {
+    keywords: ['석양','sunset','황혼','dusk','golden','노을','붉은'],
+    name: '황혼 석양', mood: '감성, 향수, 마무리',
+    layers: [{h:18,s:80,b:96},{h:25,s:60,b:75},{h:30,s:65,b:48},{h:10,s:85,b:24}],
+  },
+  {
+    keywords: ['새벽','dawn','dawn','early','아침','morning','sunrise'],
+    name: '여명 새벽', mood: '설렘, 청명함, 시작',
+    layers: [{h:220,s:60,b:75},{h:200,s:40,b:88},{h:180,s:35,b:65},{h:155,s:50,b:38}],
+  },
+  {
+    keywords: ['바다','ocean','sea','해변','beach','파도','파랑','blue'],
+    name: '열대 해변', mood: '자유, 청량, 여유',
+    layers: [{h:198,s:70,b:92},{h:190,s:65,b:75},{h:175,s:60,b:52},{h:160,s:55,b:28}],
+  },
+  {
+    keywords: ['우주','space','galaxy','별','star','cosmic','코스믹'],
+    name: '심우주', mood: '신비, 장엄함, 무한',
+    layers: [{h:245,s:85,b:12},{h:255,s:70,b:22},{h:270,s:60,b:16},{h:220,s:90,b:8}],
+  },
+  {
+    keywords: ['지하','dungeon','cave','동굴','지하도시','underground'],
+    name: '지하 던전', mood: '공포, 긴장, 미지',
+    layers: [{h:240,s:30,b:10},{h:250,s:25,b:18},{h:230,s:40,b:14},{h:220,s:20,b:6}],
+  },
+  {
+    keywords: ['마을','village','rural','전원','countryside','시골','낙원'],
+    name: '전원 마을', mood: '평화, 따뜻함, 그리움',
+    layers: [{h:195,s:45,b:85},{h:185,s:35,b:72},{h:100,s:50,b:55},{h:85,s:60,b:32}],
+  },
+  {
+    keywords: ['화산','volcano','용암','lava','inferno','지옥','hell','불'],
+    name: '용암 화산', mood: '공포, 분노, 역동',
+    layers: [{h:10,s:95,b:30},{h:15,s:90,b:50},{h:5,s:100,b:22},{h:0,s:80,b:12}],
+  },
+  {
+    keywords: ['수중','underwater','ocean floor','심해','deep sea','해저'],
+    name: '심해 수중', mood: '신비, 압도감, 고요',
+    layers: [{h:195,s:80,b:30},{h:200,s:70,b:20},{h:190,s:75,b:14},{h:185,s:85,b:8}],
+  },
+];
+
+// 추천 태그
+const SUGGESTED_TAGS = ['벚꽃 봄비', '사이버펑크 네온', '눈 내리는 숲', '석양 바다', '폐허 공장', '심우주', '새벽 안개', '여름 숲속'];
+
+let keywordGeneratedLayers = null;
+let currentMode = 'local'; // 'local' | 'ai'
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-local').classList.toggle('active', mode === 'local');
+  document.getElementById('btn-ai').classList.toggle('active', mode === 'ai');
+  document.getElementById('api-key-section').style.display = mode === 'ai' ? 'flex' : 'none';
+  if (mode === 'ai') {
+    const saved = localStorage.getItem('anthropic_api_key') || '';
+    document.getElementById('api-key-input').value = saved;
+    updateApiStatus(saved);
+  }
+}
+
+function onApiKeyChange() {
+  const val = document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('anthropic_api_key', val);
+  updateApiStatus(val);
+}
+
+function updateApiStatus(key) {
+  const el = document.getElementById('api-status');
+  const bar = document.getElementById('api-key-bar');
+  if (key.startsWith('sk-ant-') && key.length > 20) {
+    el.textContent = '✓ 준비됨';
+    el.className = 'api-status ok';
+    bar.classList.add('connected');
+  } else if (key.length > 0) {
+    el.textContent = '형식 확인';
+    el.className = 'api-status err';
+    bar.classList.remove('connected');
+  } else {
+    el.textContent = '';
+    bar.classList.remove('connected');
+  }
+}
+
+async function generateFromKeywordAI(keyword) {
+  const apiKey = localStorage.getItem('anthropic_api_key') || '';
+  if (!apiKey.startsWith('sk-ant-')) {
+    showToast('API 키를 먼저 입력하세요');
+    return;
+  }
+
+  const btn = document.getElementById('keyword-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/generate-palette', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword, apiKey }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+
+    keywordGeneratedLayers = data.layers;
+    document.getElementById('kr-title').textContent = `✦ AI · ${data.name}`;
+    document.getElementById('kr-mood').textContent = data.mood;
+    document.getElementById('kr-swatches').innerHTML = data.layers.map(l =>
+      `<div class="kr-swatch" style="background:${hsbToHsl(l.h, l.s, l.b)}"></div>`
+    ).join('');
+    document.getElementById('keyword-result').classList.add('show');
+  } catch (e) {
+    showToast('AI 오류: ' + e.message.slice(0, 60));
+  } finally {
+    btn.innerHTML = '생성';
+    btn.disabled = false;
+  }
+}
+
+function renderKeywordTags() {
+  const container = document.getElementById('keyword-tags');
+  container.innerHTML = '';
+  SUGGESTED_TAGS.forEach(tag => {
+    const el = document.createElement('span');
+    el.className = 'keyword-tag';
+    el.textContent = tag;
+    el.addEventListener('click', () => {
+      document.getElementById('keyword-input').value = tag;
+      generateFromKeyword();
+    });
+    container.appendChild(el);
+  });
+}
+
+function generateFromKeyword() {
+  const raw = document.getElementById('keyword-input').value.trim();
+  if (!raw) return;
+  if (currentMode === 'ai') { generateFromKeywordAI(raw); return; }
+
+  const tokens = raw.toLowerCase().replace(/[,·\s]+/g, ' ').split(' ').filter(Boolean);
+
+  // 키워드 점수 계산
+  let best = null, bestScore = 0;
+  KEYWORD_DB.forEach(entry => {
+    let score = 0;
+    tokens.forEach(tok => {
+      entry.keywords.forEach(kw => {
+        if (kw.includes(tok) || tok.includes(kw)) score += kw === tok ? 3 : 1;
+      });
+    });
+    if (score > bestScore) { bestScore = score; best = entry; }
+  });
+
+  // 매칭 없으면 입력 색상 단어 기반 생성
+  if (!best) {
+    best = generateGenericPalette(raw);
+  }
+
+  keywordGeneratedLayers = best.layers;
+
+  document.getElementById('kr-title').textContent = `✨ ${best.name}`;
+  document.getElementById('kr-mood').textContent = best.mood;
+
+  const swatchContainer = document.getElementById('kr-swatches');
+  swatchContainer.innerHTML = best.layers.map(l =>
+    `<div class="kr-swatch" style="background:${hsbToHsl(l.h,l.s,l.b)}"></div>`
+  ).join('');
+
+  document.getElementById('keyword-result').classList.add('show');
+}
+
+// 색 이름 → 기준 색조 매핑
+const COLOR_HUE_MAP = [
+  { words: ['빨강','red','붉','crimson','scarlet','장미','루비'], h: 0 },
+  { words: ['주황','orange','오렌지','amber','호박'], h: 28 },
+  { words: ['노랑','yellow','금색','골드','황금','레몬'], h: 52 },
+  { words: ['연두','lime','라임','황록'], h: 85 },
+  { words: ['초록','green','그린','숲','에메랄드','emerald'], h: 130 },
+  { words: ['청록','teal','민트','mint','청','cyan'], h: 175 },
+  { words: ['파랑','blue','블루','하늘색','cobalt','코발트','네이비','navy'], h: 215 },
+  { words: ['남색','indigo','인디고'], h: 240 },
+  { words: ['보라','violet','purple','퍼플','라벤더','lavender','자주'], h: 270 },
+  { words: ['분홍','pink','핑크','rose','로즈','마젠타','magenta'], h: 330 },
+  { words: ['갈색','brown','브라운','카키','khaki','모카','sepia'], h: 30 },
+  { words: ['회색','gray','grey','silver','실버','안개'], h: 210 },
+];
+
+// 밝기 키워드
+const BRIGHT_WORDS = ['밝','낮','bright','light','pale','파스텔','아침','봄','여름'];
+const DARK_WORDS  = ['어두','밤','dark','deep','심','noir','누아르','겨울','심야','폐허'];
+
+function generateGenericPalette(text) {
+  const lower = text.toLowerCase();
+
+  // 색 키워드 먼저 탐색
+  let baseH = null;
+  for (const entry of COLOR_HUE_MAP) {
+    if (entry.words.some(w => lower.includes(w))) { baseH = entry.h; break; }
+  }
+
+  // 없으면 텍스트 해시
+  if (baseH === null) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) & 0xffffffff;
+    baseH = Math.abs(hash) % 360;
+  }
+
+  const isDark   = DARK_WORDS.some(w => lower.includes(w));
+  const isBright = BRIGHT_WORDS.some(w => lower.includes(w));
+  const bBase    = isDark ? 35 : isBright ? 90 : 72;
+  const sBase    = isDark ? 55 : isBright ? 30 : 45;
+
+  // 제목: 첫 토큰 최대 6자
+  const firstToken = text.trim().split(/[\s,·]+/)[0].slice(0, 6);
+  const label = firstToken.length < text.trim().length ? firstToken + ' 씬' : firstToken;
+
+  return {
+    name: label,
+    mood: '키워드 자동 생성',
+    layers: [
+      { h: baseH,              s: Math.max(sBase - 15, 10), b: Math.min(bBase + 18, 98) },
+      { h: (baseH + 12) % 360, s: Math.max(sBase - 10, 10), b: bBase },
+      { h: (baseH + 6)  % 360, s: sBase + 10,               b: bBase - 20 },
+      { h: (baseH - 8 + 360) % 360, s: sBase + 22,           b: bBase - 38 },
+    ],
+  };
+}
+
+function applyKeywordResult() {
+  if (!keywordGeneratedLayers) return;
+  keywordGeneratedLayers.forEach((l, i) => {
+    if (LAYERS[i]) { LAYERS[i].hsb.h = l.h; LAYERS[i].hsb.s = l.s; LAYERS[i].hsb.b = l.b; }
+  });
+  if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
+  else renderAll();
+  showToast('키워드 팔레트 적용됨');
+}
+
+// ── 이미지 분석 ──────────────────────────────────────────────────
+
+// 존 정의: 이미지 세로 비율 기준 (top%, height%)
+const ANALYZE_ZONES = [
+  { id: 'sky', label: '하늘',  emoji: '☁️', top: 0,    h: 0.28, layerIdx: 0, color: 'rgba(100,160,255,0.25)' },
+  { id: 'far', label: '원경',  emoji: '🏔️', top: 0.28, h: 0.22, layerIdx: 1, color: 'rgba(160,200,160,0.20)' },
+  { id: 'mid', label: '중경',  emoji: '🌲', top: 0.50, h: 0.25, layerIdx: 2, color: 'rgba(100,180,100,0.18)' },
+  { id: 'fg',  label: '전경',  emoji: '🌿', top: 0.75, h: 0.25, layerIdx: 3, color: 'rgba(60,120,60,0.22)'  },
+];
+
+let analyzedColors = null; // [{ primary, palette:[] }] × 4 존
+
+// ── RGB ↔ HSB 변환 ──
+function rgbToHsb(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+  let h = 0;
+  if (delta > 0) {
+    if (max === r) h = ((g - b) / delta + 6) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+    h = Math.round(h * 60);
+  }
+  const s = max === 0 ? 0 : Math.round((delta / max) * 100);
+  const bv = Math.round(max * 100);
+  return { h, s, b: bv };
+}
+
+// ── 존별 지배색 추출 ──
+function extractZoneColors(imageData, zoneTop, zoneH, imgH) {
+  const { data, width } = imageData;
+  const y0 = Math.floor(zoneTop * imgH);
+  const y1 = Math.floor((zoneTop + zoneH) * imgH);
+
+  // 30° 버킷 × 4 명도 버킷 (어두움/중간어둠/중간밝음/밝음)
+  const HUE_BUCKETS = 12, B_BUCKETS = 4;
+  const buckets = Array.from({ length: HUE_BUCKETS * B_BUCKETS }, () => ({ h:0,s:0,b:0,n:0 }));
+
+  // 2×2 스텝으로 샘플링 (성능)
+  for (let y = y0; y < y1; y += 2) {
+    for (let x = 0; x < width; x += 2) {
+      const i = (y * width + x) * 4;
+      const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+      if (a < 128) continue;
+      const hsb = rgbToHsb(r, g, b);
+      // 극단값(완전 흰/검) 제외
+      if (hsb.b > 97 && hsb.s < 5) continue;
+      if (hsb.b < 3) continue;
+
+      const hIdx = Math.floor(hsb.h / 30) % HUE_BUCKETS;
+      const bIdx = Math.min(Math.floor(hsb.b / 25), B_BUCKETS - 1);
+      const bkt = buckets[hIdx * B_BUCKETS + bIdx];
+      bkt.h += hsb.h; bkt.s += hsb.s; bkt.b += hsb.b; bkt.n++;
+    }
+  }
+
+  // 픽셀 수 기준 상위 버킷 정렬
+  const sorted = buckets
+    .filter(b => b.n > 0)
+    .sort((a, b) => b.n - a.n)
+    .map(bkt => ({
+      h: Math.round(bkt.h / bkt.n),
+      s: Math.round(bkt.s / bkt.n),
+      b: Math.round(bkt.b / bkt.n),
+      weight: bkt.n,
+    }));
+
+  // 가중 평균 (전체 주조색)
+  const totalN = sorted.reduce((a, c) => a + c.weight, 0);
+  if (totalN === 0) return { primary: { h: 0, s: 0, b: 50 }, palette: [] };
+
+  // 인접 버킷 병합 후 top3 반환
+  const merged = mergeAdjacentHues(sorted);
+  const primary = merged[0] || sorted[0];
+
+  return {
+    primary,
+    palette: merged.slice(0, 3),
+  };
+}
+
+/** 30° 이내 인접 버킷을 병합해 중복 제거 */
+function mergeAdjacentHues(sorted) {
+  const result = [];
+  const used = new Set();
+  for (let i = 0; i < sorted.length; i++) {
+    if (used.has(i)) continue;
+    let { h, s, b, weight } = sorted[i];
+    let totalW = weight;
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used.has(j)) continue;
+      const diff = Math.abs(((sorted[j].h - h + 540) % 360) - 180);
+      if (diff < 35) {
+        // 가중 평균 병합
+        const w2 = sorted[j].weight;
+        h = Math.round((h * totalW + sorted[j].h * w2) / (totalW + w2));
+        s = Math.round((s * totalW + sorted[j].s * w2) / (totalW + w2));
+        b = Math.round((b * totalW + sorted[j].b * w2) / (totalW + w2));
+        totalW += w2;
+        used.add(j);
+      }
+    }
+    result.push({ h, s, b, weight: totalW });
+    used.add(i);
+  }
+  return result.sort((a, b) => b.weight - a.weight);
+}
+
+// ── 이미지 로드 & 렌더 ──
+function onImageDrop(e) {
+  e.preventDefault();
+  document.getElementById('analyze-drop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadImageFile(file);
+}
+function onImageFile(e) {
+  const file = e.target.files[0];
+  if (file) loadImageFile(file);
+}
+
+function loadImageFile(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    analyzeImage(img);
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function analyzeImage(img) {
+  // 오프스크린 캔버스로 픽셀 추출
+  const SAMPLE_W = 200;
+  const scale = SAMPLE_W / img.width;
+  const SAMPLE_H = Math.round(img.height * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = SAMPLE_W; canvas.height = SAMPLE_H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, SAMPLE_W, SAMPLE_H);
+  const imageData = ctx.getImageData(0, 0, SAMPLE_W, SAMPLE_H);
+
+  // 존별 분석
+  analyzedColors = ANALYZE_ZONES.map(zone =>
+    extractZoneColors(imageData, zone.top, zone.h, SAMPLE_H)
+  );
+
+  renderAnalyzeWorkspace(img.src, img.naturalWidth, img.naturalHeight);
+}
+
+function renderAnalyzeWorkspace(src, imgW, imgH) {
+  const ws = document.getElementById('analyze-workspace');
+  document.getElementById('analyze-drop').classList.add('hidden');
+  ws.classList.add('show');
+
+  // 이미지 + 존 오버레이
+  const wrap = document.getElementById('analyze-img-wrap');
+  const aspect = (imgH / imgW * 100).toFixed(2);
+  wrap.innerHTML = `
+    <div style="position:relative;padding-bottom:${aspect}%;overflow:hidden;">
+      <img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      ${ANALYZE_ZONES.map(zone => `
+        <div class="zone-overlay" style="
+          top:${zone.top*100}%; height:${zone.h*100}%;
+          background:${zone.color};
+          border-top: 1px solid rgba(255,255,255,0.25);
+        ">
+          <span class="zone-overlay-label">${zone.emoji} ${zone.label}</span>
+        </div>
+      `).join('')}
+    </div>`;
+
+  // 결과 카드
+  const resultsEl = document.getElementById('analyze-results');
+  resultsEl.innerHTML = '';
+  ANALYZE_ZONES.forEach((zone, zi) => {
+    const { primary, palette } = analyzedColors[zi];
+    const layerColor = hsbToHsl(primary.h, primary.s, primary.b);
+
+    const row = document.createElement('div');
+    row.className = 'ar-row';
+    row.innerHTML = `
+      <div class="ar-dot" style="background:${layerColor}"></div>
+      <div class="ar-info">
+        <b>${zone.emoji} ${zone.label}</b>
+        <span>H:${primary.h}° S:${primary.s}% B:${primary.b}%</span>
+        <div class="ar-swatch-group" style="margin-top:4px;">
+          ${(palette.length ? palette : [primary]).map((c, ci) => `
+            <div class="ar-swatch"
+                 style="background:${hsbToHsl(c.h,c.s,c.b)}"
+                 title="H:${c.h}° S:${c.s}% B:${c.b}%"
+                 onclick="applySingleAnalyzed(${zi},${ci})"></div>
+          `).join('')}
+        </div>
+      </div>
+      <button class="ar-apply" onclick="applySingleAnalyzed(${zi},0)">적용</button>
+    `;
+    resultsEl.appendChild(row);
+  });
+}
+
+function applySingleAnalyzed(zoneIdx, paletteIdx) {
+  const zone = ANALYZE_ZONES[zoneIdx];
+  const { primary, palette } = analyzedColors[zoneIdx];
+  const color = palette[paletteIdx] || primary;
+  const layer = LAYERS[zone.layerIdx];
+  layer.hsb.h = color.h;
+  layer.hsb.s = color.s;
+  layer.hsb.b = color.b;
+  if (activeLayerIdx === zone.layerIdx) selectLayer(zone.layerIdx);
+  else renderAll();
+  refreshHarmonizePreview();
+  showToast(`${zone.emoji} ${zone.label} 색상 적용됨`);
+}
+
+function applyAllAnalyzed() {
+  if (!analyzedColors) return;
+  ANALYZE_ZONES.forEach((zone, zi) => {
+    const { primary } = analyzedColors[zi];
+    const layer = LAYERS[zone.layerIdx];
+    layer.hsb.h = primary.h;
+    layer.hsb.s = primary.s;
+    layer.hsb.b = primary.b;
+  });
+  if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
+  else renderAll();
+  refreshHarmonizePreview();
+  showToast('이미지 분석 색상 전체 적용됨');
+}
+
+function toggleAnalyzePanel() {
+  const panel = document.getElementById('analyze-panel');
+  const btn   = document.getElementById('analyze-toggle-btn');
+  const isOpen = panel.classList.toggle('open');
+  btn.textContent = isOpen ? '접기 ▴' : '펼치기 ▾';
+  if (isOpen) {
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
+
+function resetAnalyze() {
+  analyzedColors = null;
+  document.getElementById('analyze-drop').classList.remove('hidden');
+  document.getElementById('analyze-workspace').classList.remove('show');
+  document.getElementById('analyze-img-wrap').innerHTML = '';
+  document.getElementById('analyze-results').innerHTML = '';
+  // 파일 인풋 리셋
+  const input = document.querySelector('#analyze-drop input[type=file]');
+  if (input) input.value = '';
+}
+
+// ── 자동 보정 ──────────────────────────────────────────────────
+
+// 조화 타입 정의: offsets[i] = 레이어 i의 하늘 색조 기준 목표 오프셋
+const HARMONY_TYPES = [
+  {
+    id: 'auto',    label: '자동',    emoji: '✦',
+    desc: '현재 색상에 가장 어울리는 조화를 자동 감지',
+    offsets: null,  // 런타임에 계산
+    huePull: 0.55,
+    dots: null,
+  },
+  {
+    id: 'analogous', label: '유사색', emoji: '🌊',
+    desc: '인접 색상 · 자연스럽고 통일된 분위기',
+    offsets: [0, 18, -18, 30],
+    huePull: 0.55,
+    dots: [0, 18, -18, 30],
+  },
+  {
+    id: 'complementary', label: '보색', emoji: '⚡',
+    desc: '대비 · 드라마틱, 강렬한 깊이감',
+    offsets: [0, 50, 130, 180],
+    huePull: 0.50,
+    dots: [0, 90, 180],
+  },
+  {
+    id: 'split', label: '분리보색', emoji: '🌗',
+    desc: '보색 양옆 · 균형 잡힌 부드러운 대비',
+    offsets: [0, 30, 150, 210],
+    huePull: 0.50,
+    dots: [0, 150, 210],
+  },
+  {
+    id: 'triadic', label: '삼각', emoji: '△',
+    desc: '120° 간격 · 생동감 있는 다채로움',
+    offsets: [0, 40, 120, 240],
+    huePull: 0.45,
+    dots: [0, 120, 240],
+  },
+  {
+    id: 'mono', label: '단색', emoji: '◎',
+    desc: '같은 색상 계열 · 세련되고 통일감 있음',
+    offsets: [0, 8, -8, 12],
+    huePull: 0.70,
+    dots: [0, 8, -8],
+  },
+];
+
+let harmonizeStrength = 0.55;
+let harmonizeSnapshot = null;
+let harmonizePreviewActive = false;
+let selectedHarmonyId = 'auto';
+
+/** 최단 경로 색상 차이 (-180 ~ +180) */
+function hueDiff(from, to) {
+  return ((to - from + 540) % 360) - 180;
+}
+
+/** 현재 레이어 hue들에 대해 각 조화 타입의 적합도 점수(낮을수록 좋음) */
+function scoreHarmony(type, skyH, layerHues) {
+  if (!type.offsets) return Infinity;
+  return layerHues.reduce((sum, h, i) => {
+    const target = (skyH + type.offsets[i] + 360) % 360;
+    return sum + Math.abs(hueDiff(h, target));
+  }, 0);
+}
+
+/** 자동 조화 감지 */
+function detectHarmonyType() {
+  const skyH = LAYERS[0].hsb.h;
+  const hues  = LAYERS.map(l => l.hsb.h);
+  const candidates = HARMONY_TYPES.filter(t => t.id !== 'auto');
+  return candidates.reduce((best, t) =>
+    scoreHarmony(t, skyH, hues) < scoreHarmony(best, skyH, hues) ? t : best
+  , candidates[0]);
+}
+
+/** strength 0~1 + harmonyId 기준으로 보정 HSB 배열 반환 (LAYERS 수정 안 함) */
+function computeHarmonized(strength, harmonyId) {
+  harmonyId = harmonyId || selectedHarmonyId;
+  const src  = LAYERS;
+  const skyH = src[0].hsb.h;
+
+  // 조화 타입 결정
+  let harmType = HARMONY_TYPES.find(t => t.id === harmonyId);
+  if (harmType.id === 'auto') harmType = detectHarmonyType();
+  const offsets  = harmType.offsets;
+  const huePull  = harmType.huePull;
+
+  // ── 1. 색조: 조화 목표 방향으로 이동 (sky는 고정)
+  const newH = src.map((layer, i) => {
+    if (i === 0) return layer.hsb.h;
+    const target = (skyH + offsets[i] + 360) % 360;
+    const diff   = hueDiff(layer.hsb.h, target);
+    return Math.round((layer.hsb.h + diff * strength * huePull + 360) % 360);
+  });
+
+  // ── 2. 온도 보정: 따뜻한 하늘이면 전경은 약간 차갑게 (보색 효과 보강)
+  // 따뜻한 범위 H:0-60, 300-360 / 차가운 범위 H:160-260
+  const skyWarm = (skyH <= 60 || skyH >= 300);
+  if (harmType.id === 'complementary' || harmType.id === 'split') {
+    const tempShift = skyWarm ? 10 : -10;
+    newH[3] = Math.round((newH[3] + tempShift * strength + 360) % 360);
+  }
+
+  // ── 3. 명도: sky 최대 → fg 최소, 현재 범위 보존
+  const bVals  = src.map(l => l.hsb.b);
+  const bMax   = Math.max(...bVals);
+  const bMin   = Math.min(...bVals);
+  const bRange = Math.max(bMax - bMin, 20);
+  const bTargets = [
+    bMax,
+    bMax - bRange * 0.30,
+    bMax - bRange * 0.62,
+    bMin,
+  ].map(v => Math.round(Math.max(5, Math.min(100, v))));
+  const newB = src.map((layer, i) =>
+    Math.round(layer.hsb.b + (bTargets[i] - layer.hsb.b) * strength)
+  );
+
+  // ── 4. 채도: sky 최소 → fg 최대
+  //   단색 조화는 채도 차이를 줄임
+  const sVals  = src.map(l => l.hsb.s);
+  const sMin   = Math.min(...sVals);
+  const sMax   = Math.max(...sVals);
+  const sRange = Math.max(sMax - sMin, harmType.id === 'mono' ? 10 : 20);
+  const sMid   = harmType.id === 'mono' ? 0.15 : 0.28;
+  const sMid2  = harmType.id === 'mono' ? 0.30 : 0.60;
+  const sTargets = [
+    sMin,
+    sMin + sRange * sMid,
+    sMin + sRange * sMid2,
+    sMax,
+  ].map(v => Math.round(Math.max(0, Math.min(100, v))));
+  const newS = src.map((layer, i) =>
+    Math.round(layer.hsb.s + (sTargets[i] - layer.hsb.s) * strength)
+  );
+
+  // ── 5. 단조성 보장 (역전 방지)
+  for (let i = 1; i < 4; i++) {
+    if (newB[i] > newB[i - 1]) newB[i] = newB[i - 1];
+    if (newS[i] < newS[i - 1]) newS[i] = newS[i - 1];
+  }
+
+  return { result: src.map((_, i) => ({ h: newH[i], s: newS[i], b: newB[i] })), harmType };
+}
+
+function setStrength(btn) {
+  harmonizeStrength = parseFloat(btn.dataset.v);
+  document.querySelectorAll('.str-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (harmonizePreviewActive) previewHarmonize();
+  else refreshHarmonizePreview();
+}
+
+function setHarmonyType(id) {
+  selectedHarmonyId = id;
+  document.querySelectorAll('.ht-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.id === id)
+  );
+  if (harmonizePreviewActive) previewHarmonize();
+  else refreshHarmonizePreview();
+}
+
+function renderHarmonyTypeGrid() {
+  const skyH = LAYERS[0].hsb.h;
+  const grid = document.getElementById('harmony-type-grid');
+  grid.innerHTML = '';
+  HARMONY_TYPES.forEach(type => {
+    const btn = document.createElement('button');
+    btn.className = 'ht-btn' + (type.id === selectedHarmonyId ? ' active' : '');
+    btn.dataset.id = type.id;
+    btn.title = type.desc;
+    // 점 미리보기
+    const dotsHtml = type.dots
+      ? `<div class="ht-dots">${type.dots.map(off =>
+          `<div class="ht-dot" style="background:hsl(${(skyH+off+360)%360},60%,55%)"></div>`
+        ).join('')}</div>`
+      : `<div class="ht-dots"><div class="ht-dot" style="background:var(--accent)"></div></div>`;
+    btn.innerHTML = `${dotsHtml}<span>${type.emoji} ${type.label}</span>`;
+    btn.addEventListener('click', () => setHarmonyType(type.id));
+    grid.appendChild(btn);
+  });
+}
+
+/** 현재 레이어 상태를 deep clone */
+function snapshotLayers() {
+  return LAYERS.map(l => ({ ...l, hsb: { ...l.hsb } }));
+}
+
+function refreshHarmonizePreview() {
+  renderHarmonyTypeGrid();   // 색조 점 미리보기 최신 hue 반영
+
+  const before = LAYERS.map(l => l.hsb);
+  const { result: after, harmType } = computeHarmonized(harmonizeStrength);
+
+  // 자동 감지 뱃지 업데이트
+  const detectedEl = document.getElementById('harmony-detected');
+  if (selectedHarmonyId === 'auto') {
+    detectedEl.style.display = '';
+    document.getElementById('hd-name').textContent = `${harmType.emoji} ${harmType.label}`;
+    document.getElementById('hd-desc').textContent = harmType.desc;
+  } else {
+    detectedEl.style.display = 'none';
+  }
+
+  // Before 스와치
+  document.getElementById('hp-before').innerHTML = before.map(hsb =>
+    `<div class="hp-swatch" style="background:${hsbToHsl(hsb.h, hsb.s, hsb.b)}"></div>`
+  ).join('');
+
+  // After 스와치
+  document.getElementById('hp-after').innerHTML = after.map(hsb =>
+    `<div class="hp-swatch" style="background:${hsbToHsl(hsb.h, hsb.s, hsb.b)}"></div>`
+  ).join('');
+
+  // 차이 배지
+  document.getElementById('diff-badges').innerHTML = LAYERS.map((layer, i) => {
+    const bHsb = before[i], aHsb = after[i];
+    const dH = Math.abs(hueDiff(bHsb.h, aHsb.h));
+    const dS = Math.abs(aHsb.s - bHsb.s);
+    const dB = Math.abs(aHsb.b - bHsb.b);
+    const changed = dH > 2 || dS > 2 || dB > 2;
+    const parts = [];
+    if (dH > 2) parts.push(`H${hueDiff(bHsb.h,aHsb.h)>0?'+':''}${hueDiff(bHsb.h,aHsb.h)}°`);
+    if (dS > 2) parts.push(`S${aHsb.s>bHsb.s?'+':''}${aHsb.s-bHsb.s}%`);
+    if (dB > 2) parts.push(`B${aHsb.b>bHsb.b?'+':''}${aHsb.b-bHsb.b}%`);
+    return `<span class="diff-badge ${changed?'changed':''}">${layer.emoji} ${changed?parts.join(' '):'유지'}</span>`;
+  }).join('');
+}
+
+function _applyComputedResult(result) {
+  LAYERS.forEach((layer, i) => {
+    layer.hsb.h = result[i].h;
+    layer.hsb.s = result[i].s;
+    layer.hsb.b = result[i].b;
+  });
+  if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
+  else renderAll();
+  refreshHarmonizePreview();
+}
+
+function previewHarmonize() {
+  if (!harmonizePreviewActive) harmonizeSnapshot = snapshotLayers();
+  harmonizePreviewActive = true;
+  const { result, harmType } = computeHarmonized(harmonizeStrength);
+  _applyComputedResult(result);
+  document.getElementById('undo-btn').style.display = '';
+  showToast(`미리보기: ${harmType.emoji} ${harmType.label} — 확정하려면 "보정 적용"`);
+}
+
+function applyHarmonize() {
+  if (!harmonizePreviewActive) {
+    harmonizeSnapshot = snapshotLayers();
+    const { result, harmType } = computeHarmonized(harmonizeStrength);
+    _applyComputedResult(result);
+    document.getElementById('undo-btn').style.display = '';
+    showToast(`${harmType.emoji} ${harmType.label} 보정 적용됨`);
+  } else {
+    harmonizePreviewActive = false;
+    refreshHarmonizePreview();
+    showToast('보정 확정됨');
+  }
+}
+
+function undoHarmonize() {
+  if (!harmonizeSnapshot) return;
+  harmonizeSnapshot.forEach((snap, i) => {
+    LAYERS[i].hsb.h = snap.hsb.h;
+    LAYERS[i].hsb.s = snap.hsb.s;
+    LAYERS[i].hsb.b = snap.hsb.b;
+  });
+  harmonizeSnapshot = null;
+  harmonizePreviewActive = false;
+  if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
+  else renderAll();
+  refreshHarmonizePreview();
+  document.getElementById('undo-btn').style.display = 'none';
+  showToast('원래 색상으로 되돌렸습니다');
+}
+
+// ── 상태 ──────────────────────────────────────────────────────
+let activeLayerIdx = null;
+
+// ── 유틸: HSB → CSS hsl ──────────────────────────────────────
+function hsbToHsl(h, s, b) {
+  // HSB to HSL conversion
+  const l = b * (1 - s / 200);
+  const sl = l === 0 || l === 100
+    ? 0
+    : (b - l) / Math.min(l, 100 - l) * 100;
+  return `hsl(${h}, ${Math.round(sl)}%, ${Math.round(l)}%)`;
+}
+
+function hsbToHex(h, s, b) {
+  const l = b * (1 - s / 200);
+  const sl = l === 0 || l === 100 ? 0 : (b - l) / Math.min(l, 100 - l) * 100;
+  // hsl to rgb
+  const hh = h / 360, ss = sl / 100, ll = l / 100;
+  let r, g, bl2;
+  if (ss === 0) { r = g = bl2 = ll; }
+  else {
+    const q = ll < 0.5 ? ll * (1 + ss) : ll + ss - ll * ss;
+    const p = 2 * ll - q;
+    r = hue2rgb(p, q, hh + 1/3);
+    g = hue2rgb(p, q, hh);
+    bl2 = hue2rgb(p, q, hh - 1/3);
+  }
+  return '#' + [r,g,bl2].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
+}
+
+function hue2rgb(p, q, t) {
+  if (t < 0) t += 1;
+  if (t > 1) t -= 1;
+  if (t < 1/6) return p + (q-p)*6*t;
+  if (t < 1/2) return q;
+  if (t < 2/3) return p + (q-p)*(2/3-t)*6;
+  return p;
+}
+
+function layerColor(layer) {
+  return hsbToHsl(layer.hsb.h, layer.hsb.s, layer.hsb.b);
+}
+
+// ── 렌더 함수 ─────────────────────────────────────────────────
+
+function renderScene() {
+  const preview = document.getElementById('scene-preview');
+  preview.innerHTML = '';
+
+  LAYERS.forEach((layer, i) => {
+    const band = document.createElement('div');
+    band.className = 'layer-band' + (i === activeLayerIdx ? ' active' : '');
+    band.style.cssText = `
+      top: ${layer.heightStart}%;
+      height: ${layer.heightEnd - layer.heightStart + 8}%;
+      background: ${layerColor(layer)};
+      z-index: ${layer.zIndex};
+    `;
+    band.innerHTML = `<span class="layer-label">${layer.emoji} ${layer.name}</span>`;
+    band.addEventListener('click', () => selectLayer(i));
+    preview.appendChild(band);
+  });
+}
+
+function renderSlots() {
+  const container = document.getElementById('layer-slots');
+  container.innerHTML = '';
+
+  LAYERS.forEach((layer, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'layer-slot' + (i === activeLayerIdx ? ' active' : '');
+    slot.innerHTML = `
+      <div class="slot-swatch" style="background:${layerColor(layer)}"></div>
+      <div class="slot-info">
+        <div class="slot-name">${layer.emoji} ${layer.name}</div>
+        <div class="slot-sub">H:${layer.hsb.h}° S:${layer.hsb.s}% B:${layer.hsb.b}% · ${layer.tip}</div>
+      </div>
+      <div class="slot-actions">
+        <button class="icon-btn" title="위로" onclick="moveLayer(event,${i},-1)">↑</button>
+        <button class="icon-btn" title="아래로" onclick="moveLayer(event,${i},1)">↓</button>
+      </div>
+    `;
+    slot.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('icon-btn')) selectLayer(i);
+    });
+    container.appendChild(slot);
+  });
+}
+
+function renderLayerGuide() {
+  const container = document.getElementById('layer-guide-row');
+  container.innerHTML = '';
+  LAYERS.forEach(layer => {
+    const item = document.createElement('div');
+    item.className = 'lgr-item';
+    item.innerHTML = `
+      <div class="lgr-dot" style="background:${layerColor(layer)}"></div>
+      <div class="lgr-text">
+        <b>${layer.emoji} ${layer.name}</b>
+        <span>H:${layer.guide.hRange} · S:${layer.guide.sRange} · B:${layer.guide.bRange}</span>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function renderHarmonyGrid() {
+  const container = document.getElementById('harmony-grid');
+  container.innerHTML = '';
+  const baseH = activeLayerIdx !== null ? LAYERS[activeLayerIdx].hsb.h : LAYERS[0].hsb.h;
+
+  HARMONIES.forEach(harmony => {
+    const hues = harmony.fn(baseH);
+    const card = document.createElement('div');
+    card.className = 'guide-card';
+    card.innerHTML = `
+      <div class="guide-swatch-row">
+        ${hues.map((h,i) => `<div class="guide-swatch" style="background:hsl(${h},55%,${50+i*5}%)"></div>`).join('')}
+      </div>
+      <div class="guide-name">${harmony.name}</div>
+      <div class="guide-desc">${harmony.desc}</div>
+    `;
+    card.addEventListener('click', () => applyHarmony(hues));
+    container.appendChild(card);
+  });
+}
+
+function renderPresets() {
+  const container = document.getElementById('preset-list');
+  container.innerHTML = '';
+  PRESETS.forEach(preset => {
+    const item = document.createElement('div');
+    item.className = 'preset-item';
+    item.innerHTML = `
+      <div class="preset-swatches">
+        ${preset.layers.map(l => `<div class="preset-swatch" style="background:${hsbToHsl(l.h,l.s,l.b)}"></div>`).join('')}
+      </div>
+      <div class="preset-info">
+        <div class="preset-name">${preset.name}</div>
+        <div class="preset-mood">${preset.mood}</div>
+      </div>
+    `;
+    item.addEventListener('click', () => applyPreset(preset));
+    container.appendChild(item);
+  });
+}
+
+// ── 인터랙션 ──────────────────────────────────────────────────
+
+function selectLayer(i) {
+  activeLayerIdx = i;
+  const layer = LAYERS[i];
+
+  document.getElementById('no-selection').style.display = 'none';
+  document.getElementById('hsb-controls').style.display = '';
+  document.getElementById('active-label').textContent = `${layer.emoji} ${layer.name} 편집 중`;
+  document.getElementById('active-dot').style.background = layerColor(layer);
+
+  document.getElementById('slider-h').value = layer.hsb.h;
+  document.getElementById('slider-s').value = layer.hsb.s;
+  document.getElementById('slider-b').value = layer.hsb.b;
+
+  updateHSBDisplay();
+  updateGuideBadge();
+  renderAll();
+}
+
+function onHSBChange() {
+  if (activeLayerIdx === null) return;
+  const layer = LAYERS[activeLayerIdx];
+  layer.hsb.h = parseInt(document.getElementById('slider-h').value);
+  layer.hsb.s = parseInt(document.getElementById('slider-s').value);
+  layer.hsb.b = parseInt(document.getElementById('slider-b').value);
+  updateHSBDisplay();
+  updateGuideBadge();
+  document.getElementById('active-dot').style.background = layerColor(layer);
+  renderAll();
+  if (!harmonizePreviewActive) refreshHarmonizePreview();
+}
+
+function updateHSBDisplay() {
+  if (activeLayerIdx === null) return;
+  const layer = LAYERS[activeLayerIdx];
+  document.getElementById('val-h').textContent = layer.hsb.h + '°';
+  document.getElementById('val-s').textContent = layer.hsb.s + '%';
+  document.getElementById('val-b').textContent = layer.hsb.b + '%';
+
+  const h = layer.hsb.h, s = layer.hsb.s;
+  document.getElementById('slider-s').style.background =
+    `linear-gradient(to right, hsl(${h},0%,50%), hsl(${h},100%,50%))`;
+
+  document.getElementById('color-preview-strip').style.background = layerColor(layer);
+}
+
+function updateGuideBadge() {
+  if (activeLayerIdx === null) return;
+  const layer = LAYERS[activeLayerIdx];
+  const g = layer.guide;
+  document.getElementById('guide-badge').textContent =
+    `H: ${g.hRange}  ·  S: ${g.sRange}  ·  B: ${g.bRange}`;
+}
+
+function moveLayer(e, i, dir) {
+  e.stopPropagation();
+  const j = i + dir;
+  if (j < 0 || j >= LAYERS.length) return;
+  [LAYERS[i], LAYERS[j]] = [LAYERS[j], LAYERS[i]];
+  if (activeLayerIdx === i) activeLayerIdx = j;
+  else if (activeLayerIdx === j) activeLayerIdx = i;
+  renderAll();
+  showToast('레이어 순서 변경됨');
+}
+
+function applyPreset(preset) {
+  preset.layers.forEach((l, i) => {
+    if (LAYERS[i]) {
+      LAYERS[i].hsb.h = l.h;
+      LAYERS[i].hsb.s = l.s;
+      LAYERS[i].hsb.b = l.b;
+    }
+  });
+  harmonizePreviewActive = false;
+  harmonizeSnapshot = null;
+  document.getElementById('undo-btn').style.display = 'none';
+  if (activeLayerIdx !== null) {
+    selectLayer(activeLayerIdx);
+  } else {
+    renderAll();
+  }
+  refreshHarmonizePreview();
+  showToast(`"${preset.name}" 프리셋 적용됨`);
+}
+
+function applyMoodQuick() {
+  const val = document.getElementById('mood-quick').value;
+  if (!val) return;
+  const preset = PRESETS.find(p => p.id === val);
+  if (preset) applyPreset(preset);
+  setTimeout(() => { document.getElementById('mood-quick').value = ''; }, 100);
+}
+
+function applyHarmony(hues) {
+  LAYERS.forEach((layer, i) => {
+    if (hues[i] !== undefined) layer.hsb.h = hues[i];
+  });
+  if (activeLayerIdx !== null) selectLayer(activeLayerIdx);
+  else renderAll();
+  showToast('색조 조화 적용됨');
+}
+
+function updateRatio() {
+  const val = document.getElementById('ratio-select').value;
+  const preview = document.getElementById('scene-preview');
+  const map = { '16/9': '56.25%', '4/3': '75%', '21/9': '42.85%', '1/1': '100%' };
+  preview.style.paddingBottom = map[val] || '56.25%';
+  preview.style.height = '0';
+  renderScene();
+}
+
+// ── 내보내기 ──────────────────────────────────────────────────
+
+function getExportData() {
+  return LAYERS.map(l => ({
+    layer: l.id,
+    name: l.name,
+    hsb: { ...l.hsb },
+    hsl: layerColor(l),
+    hex: hsbToHex(l.hsb.h, l.hsb.s, l.hsb.b),
+    guide: { ...l.guide },
+  }));
+}
+
+function exportCSS() {
+  const lines = [':root {'];
+  LAYERS.forEach(l => {
+    lines.push(`  --layer-${l.id}: ${hsbToHex(l.hsb.h, l.hsb.s, l.hsb.b)};`);
+    lines.push(`  --layer-${l.id}-hsl: ${layerColor(l)};`);
+  });
+  lines.push('}');
+  copyToClipboard(lines.join('\n'));
+  showToast('CSS 변수 복사됨');
+}
+
+function exportJSON() {
+  const data = JSON.stringify(getExportData(), null, 2);
+  copyToClipboard(data);
+  showToast('JSON 복사됨');
+}
+
+function copyAll() {
+  const data = getExportData();
+  let text = '=== 씬 무드보드 컬러 가이드 ===\n\n';
+  data.forEach(d => {
+    text += `[${d.name}]\n`;
+    text += `  HEX: ${d.hex}  |  HSL: ${d.hsl}\n`;
+    text += `  권장 H:${d.guide.hRange}  S:${d.guide.sRange}  B:${d.guide.bRange}\n\n`;
+  });
+  copyToClipboard(text);
+  showToast('전체 가이드 복사됨');
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── 전체 렌더 ─────────────────────────────────────────────────
+
+function renderAll() {
+  renderScene();
+  renderSlots();
+  renderLayerGuide();
+  renderHarmonyGrid();
+}
+
+// ── 초기화 ────────────────────────────────────────────────────
+renderAll();
+renderPresets();
+renderKeywordTags();
+renderHarmonyTypeGrid();
+refreshHarmonizePreview();
+</script>
+</body>
+</html>

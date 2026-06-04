@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: scene-moodboard
+    runtime: python
+    buildCommand: echo "No build step required"
+    startCommand: python server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
