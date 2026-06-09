@@ -745,9 +745,283 @@
     gap: 6px;
   }
   .active-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  /* ═══════════════════════════════════════════════════
+     고급 분석 모달
+  ═══════════════════════════════════════════════════ */
+  .adv-modal-backdrop {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .adv-modal-backdrop.open { display: flex; }
+
+  .adv-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: min(1100px, 96vw);
+    height: min(780px, 92vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+
+  .adv-modal-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .adv-modal-header h2 { font-size: 16px; font-weight: 700; }
+  .adv-modal-close {
+    margin-left: auto;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 8px;
+    width: 32px; height: 32px; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .adv-modal-close:hover { border-color: #e05c5c; color: #e05c5c; }
+
+  /* 탭 */
+  .adv-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 22px;
+    flex-shrink: 0;
+  }
+  .adv-tab {
+    padding: 10px 18px; font-size: 13px; font-weight: 600;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .adv-tab:hover { color: var(--text); }
+  .adv-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  /* 탭 콘텐츠 */
+  .adv-tab-content { display: none; flex: 1; overflow: hidden; }
+  .adv-tab-content.active { display: flex; }
+
+  /* 공통 2컬럼 레이아웃 */
+  .adv-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    width: 100%; overflow: hidden;
+  }
+  .adv-left {
+    padding: 20px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .adv-right {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .adv-section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  /* 이미지 캔버스 컨테이너 */
+  .adv-canvas-wrap {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    line-height: 0;
+  }
+  .adv-canvas-wrap canvas { display: block; width: 100%; height: auto; }
+  .adv-canvas-wrap img   { display: block; width: 100%; height: auto; }
+
+  /* 오버레이 캔버스 (이미지 위에 겹침) */
+  .adv-overlay-canvas {
+    position: absolute; inset: 0;
+    width: 100% !important; height: 100% !important;
+    pointer-events: none;
+  }
+
+  /* 오버레이 토글 버튼들 */
+  .adv-overlay-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .adv-ovl-btn {
+    padding: 5px 12px; font-size: 11px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 20px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .adv-ovl-btn:hover { border-color: var(--accent); color: var(--text); }
+  .adv-ovl-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* 히스토그램 */
+  .adv-histogram { display: flex; flex-direction: column; gap: 4px; }
+  .adv-hist-row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+  .adv-hist-label { width: 14px; text-align: right; color: var(--text-dim); font-weight: 700; }
+  .adv-hist-bars { flex: 1; height: 40px; position: relative; }
+  .adv-hist-canvas { width: 100% !important; height: 40px; border-radius: 4px; }
+
+  /* 수치 카드 */
+  .adv-metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .adv-metric {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 12px;
+  }
+  .adv-metric-label { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+  .adv-metric-value { font-size: 20px; font-weight: 800; }
+  .adv-metric-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .adv-metric-bar {
+    height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden;
+  }
+  .adv-metric-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+  /* 색상 팔레트 스트립 */
+  .adv-palette-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .adv-pal-swatch {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.08);
+    cursor: pointer; transition: transform 0.15s;
+    position: relative;
+  }
+  .adv-pal-swatch:hover { transform: scale(1.15); z-index: 1; }
+  .adv-pal-swatch span {
+    position: absolute; bottom: calc(100%+4px); left: 50%;
+    transform: translateX(-50%);
+    background: #000; color: #fff; font-size: 9px;
+    padding: 2px 5px; border-radius: 3px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .adv-pal-swatch:hover span { opacity: 1; }
+
+  /* 색조 조화 행 */
+  .adv-theory-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 12px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .adv-theory-swatches { display: flex; gap: 3px; }
+  .adv-theory-swatch { width: 22px; height: 30px; border-radius: 5px; }
+  .adv-theory-info b  { font-size: 12px; display: block; }
+  .adv-theory-info span { font-size: 10px; color: var(--text-dim); }
+
+  /* 무게중심 캔버스 */
+  .adv-balance-bar {
+    height: 10px; background: var(--surface2); border-radius: 5px;
+    overflow: hidden; position: relative;
+  }
+  .adv-balance-indicator {
+    position: absolute; top: 0; width: 4px; height: 100%;
+    background: var(--accent); border-radius: 2px;
+    transition: left 0.4s;
+    transform: translateX(-50%);
+  }
+
+  /* 분석 시작 버튼 */
+  .adv-analyze-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 9px;
+    color: #fff; font-size: 13px; font-weight: 700;
+    padding: 10px 18px; cursor: pointer;
+    transition: opacity 0.15s; display: flex; align-items: center; gap: 8px;
+  }
+  .adv-analyze-btn:hover { opacity: 0.88; }
+
 </style>
 </head>
 <body>
+
+<!-- 고급 분석 모달 -->
+<div class="adv-modal-backdrop" id="adv-modal-backdrop">
+  <div class="adv-modal">
+    <div class="adv-modal-header">
+      <span style="font-size:20px">🔬</span>
+      <h2 id="adv-modal-title">고급 이미지 분석</h2>
+      <button class="adv-modal-close" onclick="closeAnalysisModal()">✕</button>
+    </div>
+    <div class="adv-tabs">
+      <button class="adv-tab active" data-tab="color" onclick="switchAnalysisTab('color')" id="adv-tab-color">🎨 색상 분석</button>
+      <button class="adv-tab" data-tab="comp" onclick="switchAnalysisTab('comp')" id="adv-tab-comp">📐 구도 분석</button>
+      <button class="adv-tab" data-tab="tech" onclick="switchAnalysisTab('tech')" id="adv-tab-tech">📊 기술적 분석</button>
+    </div>
+
+    <!-- 색상 분석 탭 -->
+    <div class="adv-tab-content active" id="adv-content-color">
+      <div class="adv-split">
+        <div class="adv-left">
+          <div class="adv-section-title" id="adv-t-heatmap">히트맵 시각화</div>
+          <div class="adv-canvas-wrap" id="adv-heatmap-wrap">
+            <img id="adv-src-img-color" style="display:block;width:100%;height:auto;">
+            <canvas class="adv-overlay-canvas" id="adv-heatmap-canvas"></canvas>
+          </div>
+          <div class="adv-overlay-btns" id="adv-heatmap-btns">
+            <button class="adv-ovl-btn on" data-mode="none" onclick="setHeatmapMode(this,'none')" id="adv-hm-none">원본</button>
+            <button class="adv-ovl-btn" data-mode="brightness" onclick="setHeatmapMode(this,'brightness')" id="adv-hm-brightness">명도</button>
+            <button class="adv-ovl-btn" data-mode="saturation" onclick="setHeatmapMode(this,'saturation')" id="adv-hm-saturation">채도</button>
+            <button class="adv-ovl-btn" data-mode="temperature" onclick="setHeatmapMode(this,'temperature')" id="adv-hm-temperature">색온도</button>
+          </div>
+        </div>
+        <div class="adv-right">
+          <div class="adv-section-title" id="adv-t-dominant">도미넌트 컬러</div>
+          <div class="adv-palette-row" id="adv-palette-row"></div>
+          <div class="adv-section-title" id="adv-t-theory" style="margin-top:8px">색상 이론 팔레트</div>
+          <div id="adv-theory-cards" style="display:flex;flex-direction:column;gap:7px;"></div>
+          <div class="adv-section-title" id="adv-t-temp-stat" style="margin-top:8px">색온도 분포</div>
+          <div id="adv-temp-stat" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구도 분석 탭 -->
+    <div class="adv-tab-content" id="adv-content-comp">
+      <div class="adv-split">
+        <div class="adv-left">
+          <div class="adv-section-title" id="adv-t-overlay">구도 오버레이</div>
+          <div class="adv-canvas-wrap" id="adv-comp-wrap">
+            <img id="adv-src-img-comp" style="display:block;width:100%;height:auto;">
+            <canvas class="adv-overlay-canvas" id="adv-comp-canvas"></canvas>
+          </div>
+          <div class="adv-overlay-btns">
+            <button class="adv-ovl-btn" data-mode="thirds" onclick="toggleCompOverlay(this,'thirds')" id="adv-co-thirds">삼분할</button>
+            <button class="adv-ovl-btn" data-mode="golden" onclick="toggleCompOverlay(this,'golden')" id="adv-co-golden">황금비율</button>
+            <button class="adv-ovl-btn" data-mode="flow" onclick="toggleCompOverlay(this,'flow')" id="adv-co-flow">시선 흐름</button>
+            <button class="adv-ovl-btn" data-mode="balance" onclick="toggleCompOverlay(this,'balance')" id="adv-co-balance">무게중심</button>
+          </div>
+        </div>
+        <div class="adv-right">
+          <div class="adv-section-title" id="adv-t-balance">밸런스 분석</div>
+          <div class="adv-metric-grid" id="adv-balance-metrics"></div>
+          <div class="adv-section-title" id="adv-t-flow-dir" style="margin-top:8px">주요 시선 방향</div>
+          <div id="adv-flow-info" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <div class="adv-section-title" id="adv-t-comp-rule" style="margin-top:8px">구도 평가</div>
+          <div id="adv-comp-eval" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기술적 분석 탭 -->
+    <div class="adv-tab-content" id="adv-content-tech">
+      <div class="adv-split">
+        <div class="adv-left">
+          <div class="adv-section-title" id="adv-t-histogram">히스토그램</div>
+          <div class="adv-histogram" id="adv-histogram"></div>
+        </div>
+        <div class="adv-right">
+          <div class="adv-section-title" id="adv-t-metrics">측정 수치</div>
+          <div class="adv-metric-grid" id="adv-tech-metrics"></div>
+          <div class="adv-section-title" id="adv-t-channel" style="margin-top:8px">채널 통계</div>
+          <div id="adv-channel-stats" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="icon-badge">🎨</div>
@@ -860,6 +1134,7 @@
           <!-- 하단 액션 -->
           <div class="analyze-footer">
             <button data-i18n="analyzeApplyAll" onclick="applyAllAnalyzed()">전체 적용</button>
+            <button class="adv-analyze-btn" onclick="openAnalysisModal()">🔬 <span data-i18n="advAnalyze">고급 분석</span></button>
             <button data-i18n="analyzeReset" onclick="resetAnalyze()" style="border-color:#e05c5c;color:#e05c5c;">초기화</button>
           </div>
         </div>
@@ -1009,6 +1284,15 @@ const LANGS = {
     analyzeDropBold:'이미지를 드래그하거나 클릭', analyzeDropSuffix:'해서 업로드',
     analyzeDropSub:'PNG · JPG · WEBP — 존별 지배색 자동 추출',
     analyzeApplyAll:'전체 적용', analyzeReset:'초기화', analyzeApplyZone:'적용',
+    advAnalyze:'고급 분석',
+    advModalTitle:'고급 이미지 분석',
+    advTabColor:'🎨 색상 분석', advTabComp:'📐 구도 분석', advTabTech:'📊 기술적 분석',
+    advHeatmap:'히트맵 시각화', advDominant:'도미넌트 컬러', advTheory:'색상 이론 팔레트',
+    advTempStat:'색온도 분포', advOverlay:'구도 오버레이',
+    advBalance:'밸런스 분석', advFlowDir:'주요 시선 방향', advCompRule:'구도 평가',
+    advHistogram:'히스토그램', advMetrics:'측정 수치', advChannel:'채널 통계',
+    advOvNone:'원본', advOvBrightness:'명도', advOvSaturation:'채도', advOvTemperature:'색온도',
+    advOvThirds:'삼분할', advOvGolden:'황금비율', advOvFlow:'시선 흐름', advOvBalance:'무게중심',
     // Layers
     skyName:'하늘 (Sky)', farName:'원경 (Far BG)', midName:'중경 (Mid BG)', fgName:'전경 (Foreground)',
     skyTip:'대기산란으로 채도 낮고 밝음. 태양 반대쪽은 더 진한 파랑.',
@@ -1087,6 +1371,15 @@ const LANGS = {
     analyzeDropBold:'Drag & drop or click', analyzeDropSuffix:' to upload an image',
     analyzeDropSub:'PNG · JPG · WEBP — auto-extracts dominant color per zone',
     analyzeApplyAll:'Apply All', analyzeReset:'Reset', analyzeApplyZone:'Apply',
+    advAnalyze:'Advanced Analysis',
+    advModalTitle:'Advanced Image Analysis',
+    advTabColor:'🎨 Color Analysis', advTabComp:'📐 Composition', advTabTech:'📊 Technical',
+    advHeatmap:'Heatmap Visualization', advDominant:'Dominant Colors', advTheory:'Color Theory Palettes',
+    advTempStat:'Color Temperature', advOverlay:'Composition Overlays',
+    advBalance:'Balance Analysis', advFlowDir:'Visual Flow Direction', advCompRule:'Composition Score',
+    advHistogram:'Histogram', advMetrics:'Measurements', advChannel:'Channel Stats',
+    advOvNone:'Original', advOvBrightness:'Brightness', advOvSaturation:'Saturation', advOvTemperature:'Temp',
+    advOvThirds:'Rule of Thirds', advOvGolden:'Golden Ratio', advOvFlow:'Visual Flow', advOvBalance:'Balance',
     // Layers
     skyName:'Sky', farName:'Far BG', midName:'Mid BG', fgName:'Foreground',
     skyTip:'Atmospheric scatter: low saturation, high brightness. Deeper blue opposite the sun.',
@@ -1727,6 +2020,9 @@ function analyzeImage(img) {
   analyzedColors = ANALYZE_ZONES.map(zone =>
     extractZoneColors(imageData, zone.top, zone.h, SAMPLE_H)
   );
+
+  // 고급 분석용 이미지 데이터 저장
+  _setAdvImg(img, imageData, SAMPLE_W, SAMPLE_H);
 
   renderAnalyzeWorkspace(img.src, img.naturalWidth, img.naturalHeight);
 }
@@ -2395,6 +2691,548 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 고급 이미지 분석
+// ═══════════════════════════════════════════════════════════════
+
+let _advImgEl = null;          // 분석용 원본 Image
+let _advImgData = null;        // ImageData (200px wide)
+let _advImgW = 0, _advImgH = 0;
+let _activeCompOverlays = new Set();
+let _heatmapMode = 'none';
+let _advDominantColors = [];   // 전체 이미지 도미넌트
+
+// ── 모달 열기/닫기 ──────────────────────────────────────────────
+function openAnalysisModal() {
+  if (!_advImgEl) { showToast(currentLang === 'ko' ? '이미지를 먼저 업로드하세요' : 'Upload an image first'); return; }
+  document.getElementById('adv-modal-backdrop').classList.add('open');
+  applyLangToDOM();
+  _updateAdvModalLang();
+  _runColorAnalysis();
+  _runCompAnalysis();
+  _runTechAnalysis();
+}
+function closeAnalysisModal() {
+  document.getElementById('adv-modal-backdrop').classList.remove('open');
+}
+function switchAnalysisTab(tab) {
+  document.querySelectorAll('.adv-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.adv-tab-content').forEach(c => c.classList.toggle('active', c.id === `adv-content-${tab}`));
+}
+function _updateAdvModalLang() {
+  document.getElementById('adv-modal-title').textContent = T.advModalTitle;
+  document.getElementById('adv-tab-color').textContent = T.advTabColor;
+  document.getElementById('adv-tab-comp').textContent  = T.advTabComp;
+  document.getElementById('adv-tab-tech').textContent  = T.advTabTech;
+  const ids = {
+    'adv-t-heatmap':T.advHeatmap,'adv-t-dominant':T.advDominant,'adv-t-theory':T.advTheory,
+    'adv-t-temp-stat':T.advTempStat,'adv-t-overlay':T.advOverlay,'adv-t-balance':T.advBalance,
+    'adv-t-flow-dir':T.advFlowDir,'adv-t-comp-rule':T.advCompRule,'adv-t-histogram':T.advHistogram,
+    'adv-t-metrics':T.advMetrics,'adv-t-channel':T.advChannel,
+    'adv-hm-none':T.advOvNone,'adv-hm-brightness':T.advOvBrightness,
+    'adv-hm-saturation':T.advOvSaturation,'adv-hm-temperature':T.advOvTemperature,
+    'adv-co-thirds':T.advOvThirds,'adv-co-golden':T.advOvGolden,
+    'adv-co-flow':T.advOvFlow,'adv-co-balance':T.advOvBalance,
+  };
+  Object.entries(ids).forEach(([id, txt]) => {
+    const el = document.getElementById(id); if(el) el.textContent = txt;
+  });
+}
+
+// ── 이미지 로드 훅 (기존 analyzeImage에 연결) ──
+function _setAdvImg(img, imgData, w, h) {
+  _advImgEl = img; _advImgData = imgData; _advImgW = w; _advImgH = h;
+  ['adv-src-img-color','adv-src-img-comp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.src = img.src; el.style.display = 'block'; }
+  });
+}
+
+// ── 유틸: RGB→HSB ─────────────────────────────────────────────
+function _rgb2hsb(r,g,b){ return rgbToHsb(r,g,b); }
+function _rgb2lum(r,g,b){ return 0.299*r + 0.587*g + 0.114*b; }
+function _rgb2temp(r,g,b){ return r - b; } // 양수=따뜻, 음수=차가움
+
+// ── 1. 색상 분석 ───────────────────────────────────────────────
+function _runColorAnalysis() {
+  const data = _advImgData.data, W = _advImgW, H = _advImgH;
+
+  // 전체 도미넌트 컬러 (30° 버킷)
+  const buckets = {};
+  for (let i = 0; i < data.length; i += 8) { // stride 2
+    const r=data[i],g=data[i+1],b=data[i+2];
+    const hsb = _rgb2hsb(r,g,b);
+    if (hsb.b < 5 || (hsb.b > 96 && hsb.s < 5)) continue;
+    const key = `${Math.floor(hsb.h/30)*30}_${Math.floor(hsb.b/25)*25}`;
+    if (!buckets[key]) buckets[key] = { h:0,s:0,b_:0,n:0,rSum:0,gSum:0,bSum:0 };
+    const bk = buckets[key];
+    bk.h+=hsb.h; bk.s+=hsb.s; bk.b_+=hsb.b; bk.n++;
+    bk.rSum+=r; bk.gSum+=g; bk.bSum+=b;
+  }
+  const sorted = Object.values(buckets)
+    .sort((a,b)=>b.n-a.n)
+    .map(bk=>({ h:Math.round(bk.h/bk.n),s:Math.round(bk.s/bk.n),b:Math.round(bk.b_/bk.n),
+                r:Math.round(bk.rSum/bk.n),g:Math.round(bk.gSum/bk.n),bv:Math.round(bk.bSum/bk.n) }));
+
+  // 인접 병합
+  const merged = [];
+  const used = new Set();
+  for (let i=0;i<sorted.length;i++){
+    if(used.has(i)) continue;
+    let c=sorted[i]; let wt=c.n||1;
+    for(let j=i+1;j<Math.min(sorted.length,30);j++){
+      if(used.has(j)) continue;
+      const diff=Math.abs(((sorted[j].h-c.h+540)%360)-180);
+      if(diff<35){ used.add(j); wt+=sorted[j].n||1; }
+    }
+    merged.push({...c,weight:wt}); used.add(i);
+  }
+  _advDominantColors = merged.slice(0,8);
+
+  // 도미넌트 스와치 렌더
+  const palRow = document.getElementById('adv-palette-row');
+  palRow.innerHTML = _advDominantColors.map((c,ci)=>{
+    const hex = hsbToHex(c.h,c.s,c.b);
+    return `<div class="adv-pal-swatch" style="background:${hex}" onclick="navigator.clipboard?.writeText('${hex}')">
+      <span>${hex}</span></div>`;
+  }).join('');
+
+  // 색상 이론 카드
+  const baseC = _advDominantColors[0] || {h:210,s:50,b:70};
+  const theories = [
+    { name: currentLang==='ko'?'보색':'Complementary', colors:[baseC.h,(baseC.h+180)%360].map(h=>({h,s:baseC.s,b:baseC.b})) },
+    { name: currentLang==='ko'?'유사색':'Analogous', colors:[-30,0,30].map(o=>({h:(baseC.h+o+360)%360,s:baseC.s,b:baseC.b})) },
+    { name: currentLang==='ko'?'삼색':'Triadic', colors:[0,120,240].map(o=>({h:(baseC.h+o)%360,s:baseC.s,b:baseC.b})) },
+    { name: currentLang==='ko'?'분리보색':'Split-comp', colors:[0,150,210].map(o=>({h:(baseC.h+o)%360,s:baseC.s,b:baseC.b})) },
+  ];
+  document.getElementById('adv-theory-cards').innerHTML = theories.map(t=>`
+    <div class="adv-theory-card">
+      <div class="adv-theory-swatches">${t.colors.map(c=>`<div class="adv-theory-swatch" style="background:${hsbToHsl(c.h,c.s,c.b)}"></div>`).join('')}</div>
+      <div class="adv-theory-info"><b>${t.name}</b><span>${t.colors.map(c=>`H:${c.h}°`).join(' · ')}</span></div>
+    </div>`).join('');
+
+  // 색온도 분포
+  let warm=0,cool=0,neutral=0;
+  for(let i=0;i<data.length;i+=8){
+    const t=_rgb2temp(data[i],data[i+1],data[i+2]);
+    if(t>15)warm++; else if(t<-15)cool++; else neutral++;
+  }
+  const total=warm+cool+neutral||1;
+  const pct=n=>Math.round(n/total*100);
+  document.getElementById('adv-temp-stat').innerHTML = [
+    {label:currentLang==='ko'?'따뜻함 🔴':'Warm 🔴',val:pct(warm),color:'#e05c3a'},
+    {label:currentLang==='ko'?'차가움 🔵':'Cool 🔵',val:pct(cool),color:'#4a8cdf'},
+    {label:currentLang==='ko'?'중립 ⚪':'Neutral ⚪',val:pct(neutral),color:'var(--text-dim)'},
+  ].map(item=>`
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+      <div style="flex:1">${item.label}</div>
+      <div style="font-weight:700;color:${item.color}">${item.val}%</div>
+      <div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="width:${item.val}%;height:100%;background:${item.color};border-radius:3px"></div>
+      </div>
+    </div>`).join('');
+
+  // 히트맵 초기화
+  _renderHeatmapOverlay('none');
+}
+
+function setHeatmapMode(btn, mode) {
+  _heatmapMode = mode;
+  document.querySelectorAll('#adv-heatmap-btns .adv-ovl-btn').forEach(b=>b.classList.toggle('on',b===btn));
+  _renderHeatmapOverlay(mode);
+}
+
+function _renderHeatmapOverlay(mode) {
+  const canvas = document.getElementById('adv-heatmap-canvas');
+  const wrap   = document.getElementById('adv-heatmap-wrap');
+  const img    = document.getElementById('adv-src-img-color');
+  if (!img.naturalWidth) return;
+  const W = img.clientWidth, H = img.clientHeight;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  if (mode === 'none') return;
+
+  // 소스 데이터 (저해상도)
+  const sw=_advImgW, sh=_advImgH;
+  const d=_advImgData.data;
+  const offscreen=document.createElement('canvas'); offscreen.width=sw; offscreen.height=sh;
+  const octx=offscreen.getContext('2d');
+  const id2=octx.createImageData(sw,sh);
+  for(let y=0;y<sh;y++){
+    for(let x=0;x<sw;x++){
+      const i=(y*sw+x)*4;
+      const r=d[i],g=d[i+1],b=d[i+2];
+      let v, cr,cg,cb,ca=200;
+      if(mode==='brightness'){
+        v=_rgb2lum(r,g,b)/255;
+        // 어두움=파랑, 밝음=노랑
+        cr=Math.round(v*255); cg=Math.round(v*200); cb=Math.round((1-v)*255);
+      } else if(mode==='saturation'){
+        const hsb=_rgb2hsb(r,g,b); v=hsb.s/100;
+        cr=Math.round(v*220); cg=Math.round((1-v)*60); cb=Math.round((1-v)*180);
+      } else { // temperature
+        const t=(_rgb2temp(r,g,b)+255)/510;
+        cr=Math.round(t*255); cg=30; cb=Math.round((1-t)*255);
+      }
+      id2.data[i]=cr; id2.data[i+1]=cg; id2.data[i+2]=cb; id2.data[i+3]=ca;
+    }
+  }
+  octx.putImageData(id2,0,0);
+  ctx.drawImage(offscreen,0,0,W,H);
+}
+
+// ── 2. 구도 분석 ───────────────────────────────────────────────
+function _runCompAnalysis() {
+  const data=_advImgData.data, W=_advImgW, H=_advImgH;
+
+  // 무게중심 계산 (어두운 픽셀 = 무거움)
+  let sumX=0,sumY=0,sumW=0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      const lum=_rgb2lum(data[i],data[i+1],data[i+2]);
+      const w=Math.max(0,255-lum); // 어두울수록 무거움
+      sumX+=x*w; sumY+=y*w; sumW+=w;
+    }
+  }
+  const cgX=sumW?sumX/sumW/W:0.5;
+  const cgY=sumW?sumY/sumW/H:0.5;
+
+  // 삼분할 교점과의 거리
+  const thirds=[[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]];
+  const thirdsScore=Math.min(...thirds.map(([tx,ty])=>Math.hypot(cgX-tx,cgY-ty)));
+  const thirdsGrade=thirdsScore<0.12?'A':thirdsScore<0.2?'B':'C';
+
+  // 수평 밸런스 (좌우)
+  let leftW=0,rightW=0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      const w=Math.max(0,255-_rgb2lum(data[i],data[i+1],data[i+2]));
+      if(x<W/2)leftW+=w; else rightW+=w;
+    }
+  }
+  const hBalance=Math.round((leftW/(leftW+rightW||1))*100);
+
+  // 수직 밸런스 (상하)
+  let topW=0,bottomW=0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      const w=Math.max(0,255-_rgb2lum(data[i],data[i+1],data[i+2]));
+      if(y<H/2)topW+=w; else bottomW+=w;
+    }
+  }
+  const vBalance=Math.round((bottomW/(topW+bottomW||1))*100);
+
+  document.getElementById('adv-balance-metrics').innerHTML = [
+    { label:currentLang==='ko'?'좌우 밸런스':'H-Balance', value:`${hBalance}%`, sub:currentLang==='ko'?`좌:${hBalance}% 우:${100-hBalance}%`:`L:${hBalance}% R:${100-hBalance}%`, fill:hBalance, color:'#5b6ef5' },
+    { label:currentLang==='ko'?'상하 밸런스':'V-Balance', value:`${vBalance}%`, sub:currentLang==='ko'?`하:${vBalance}% 상:${100-vBalance}%`:`B:${vBalance}% T:${100-vBalance}%`, fill:vBalance, color:'#a06ef5' },
+    { label:currentLang==='ko'?'무게중심 X':'CoG X', value:`${Math.round(cgX*100)}%`, sub:currentLang==='ko'?'좌←→우':'Left←→Right', fill:Math.round(cgX*100), color:'#3dba6f' },
+    { label:currentLang==='ko'?'무게중심 Y':'CoG Y', value:`${Math.round(cgY*100)}%`, sub:currentLang==='ko'?'상←→하':'Top←→Bottom', fill:Math.round(cgY*100), color:'#e0943a' },
+  ].map(m=>`
+    <div class="adv-metric">
+      <div class="adv-metric-label">${m.label}</div>
+      <div class="adv-metric-value" style="font-size:18px">${m.value}</div>
+      <div class="adv-metric-sub">${m.sub}</div>
+      <div class="adv-metric-bar"><div class="adv-metric-bar-fill" style="width:${m.fill}%;background:${m.color}"></div></div>
+    </div>`).join('');
+
+  // Sobel 시선 흐름 (저해상도)
+  const gray=new Float32Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    gray[y*W+x]=_rgb2lum(data[i],data[i+1],data[i+2]);
+  }
+  const DIRS=8;
+  const dirBins=new Float32Array(DIRS);
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
+    const gx=gray[y*W+(x+1)]-gray[y*W+(x-1)];
+    const gy=gray[(y+1)*W+x]-gray[(y-1)*W+x];
+    const mag=Math.sqrt(gx*gx+gy*gy);
+    if(mag<5) continue;
+    let angle=(Math.atan2(gy,gx)+Math.PI)*180/Math.PI;
+    const bin=Math.floor((angle%(360))/45)%DIRS;
+    dirBins[bin]+=mag;
+  }
+  const dirMax=Math.max(...dirBins)||1;
+  const dirNames=currentLang==='ko'
+    ?['→ 우','↗ 우상','↑ 상','↖ 좌상','← 좌','↙ 좌하','↓ 하','↘ 우하']
+    :['→ Right','↗ UR','↑ Up','↖ UL','← Left','↙ DL','↓ Down','↘ DR'];
+  const topDirs=[...dirBins.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('adv-flow-info').innerHTML = topDirs.map(([bi,val])=>`
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <span style="font-size:16px">${dirNames[bi].split(' ')[0]}</span>
+      <span style="flex:1">${dirNames[bi].split(' ')[1]||''}</span>
+      <div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="width:${Math.round(val/dirMax*100)}%;height:100%;background:var(--accent);border-radius:3px"></div>
+      </div>
+      <span style="font-size:10px;color:var(--text-dim)">${Math.round(val/dirMax*100)}%</span>
+    </div>`).join('');
+
+  // 구도 평가
+  document.getElementById('adv-comp-eval').innerHTML = [
+    { label:currentLang==='ko'?'삼분할 법칙':'Rule of Thirds',
+      grade:thirdsGrade, desc:thirdsGrade==='A'?(currentLang==='ko'?'교점에 피사체 위치':'Subject near intersection'):(currentLang==='ko'?'교점에서 다소 벗어남':'Slightly off intersection') },
+    { label:currentLang==='ko'?'좌우 대칭':'Horizontal Symmetry',
+      grade:Math.abs(hBalance-50)<10?'A':Math.abs(hBalance-50)<20?'B':'C',
+      desc:`${hBalance}% / ${100-hBalance}%` },
+  ].map(e=>{
+    const col=e.grade==='A'?'#3dba6f':e.grade==='B'?'#e0943a':'#e05c5c';
+    return `<div class="adv-theory-card">
+      <div style="font-size:22px;font-weight:900;color:${col};min-width:28px">${e.grade}</div>
+      <div class="adv-theory-info"><b>${e.label}</b><span>${e.desc}</span></div>
+    </div>`;
+  }).join('');
+
+  // 오버레이 초기화
+  _activeCompOverlays.clear();
+  document.querySelectorAll('.adv-ovl-btn[data-mode]').forEach(b=>{
+    if(['thirds','golden','flow','balance'].includes(b.dataset.mode)) b.classList.remove('on');
+  });
+  _drawCompOverlay();
+}
+
+function toggleCompOverlay(btn, mode) {
+  if(_activeCompOverlays.has(mode)) _activeCompOverlays.delete(mode);
+  else _activeCompOverlays.add(mode);
+  btn.classList.toggle('on', _activeCompOverlays.has(mode));
+  _drawCompOverlay();
+}
+
+function _drawCompOverlay() {
+  const canvas=document.getElementById('adv-comp-canvas');
+  const img=document.getElementById('adv-src-img-comp');
+  if(!img.naturalWidth) return;
+  const W=img.clientWidth, H=img.clientHeight;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  if(_activeCompOverlays.has('thirds')) {
+    ctx.strokeStyle='rgba(255,255,255,0.55)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([5,4]);
+    [1/3,2/3].forEach(r=>{
+      ctx.beginPath(); ctx.moveTo(r*W,0); ctx.lineTo(r*W,H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,r*H); ctx.lineTo(W,r*H); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,220,0,0.9)';
+    [1/3,2/3].forEach(rx=>[1/3,2/3].forEach(ry=>{
+      ctx.beginPath(); ctx.arc(rx*W,ry*H,5,0,Math.PI*2); ctx.fill();
+    }));
+  }
+
+  if(_activeCompOverlays.has('golden')) {
+    _drawGoldenSpiral(ctx, W, H);
+  }
+
+  if(_activeCompOverlays.has('flow')) {
+    _drawFlowArrows(ctx, W, H);
+  }
+
+  if(_activeCompOverlays.has('balance')) {
+    const data=_advImgData.data,sw=_advImgW,sh=_advImgH;
+    let sumX=0,sumY=0,sumWt=0;
+    for(let y=0;y<sh;y++) for(let x=0;x<sw;x++){
+      const i=(y*sw+x)*4;
+      const w=Math.max(0,255-_rgb2lum(data[i],data[i+1],data[i+2]));
+      sumX+=x*w; sumY+=y*w; sumWt+=w;
+    }
+    const cgX=sumWt?(sumX/sumWt/sw)*W:W/2;
+    const cgY=sumWt?(sumY/sumWt/sh)*H:H/2;
+    ctx.strokeStyle='rgba(255,80,80,0.9)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(cgX,0); ctx.lineTo(cgX,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,cgY); ctx.lineTo(W,cgY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,80,80,0.9)';
+    ctx.beginPath(); ctx.arc(cgX,cgY,8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font='bold 9px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('CG',cgX,cgY);
+  }
+}
+
+function _drawGoldenSpiral(ctx, W, H) {
+  const PHI=1.61803398875;
+  ctx.strokeStyle='rgba(255,210,0,0.8)';
+  ctx.lineWidth=2;
+  ctx.save();
+  // 4가지 방향 중 가장 흔한 우하→좌상 방향
+  let x=0,y=0,w=W,h=H;
+  const quads=[[0,0],[1,0],[1,1],[0,1]]; // 회전 방향
+  ctx.beginPath();
+  for(let i=0;i<8;i++){
+    const qi=i%4;
+    const [qx,qy]=quads[qi];
+    const r=Math.min(w,h);
+    const cx=x+qx*w, cy=y+qy*h;
+    const startAngle=[Math.PI,1.5*Math.PI,0,0.5*Math.PI][qi];
+    ctx.arc(cx,cy,r,startAngle,startAngle+Math.PI/2);
+    if(w>h){ x+=qx===0?r:0; w-=r; }
+    else    { y+=qy===0?r:0; h-=r; }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function _drawFlowArrows(ctx, W, H) {
+  const data=_advImgData.data,sw=_advImgW,sh=_advImgH;
+  const gray=new Float32Array(sw*sh);
+  for(let y=0;y<sh;y++) for(let x=0;x<sw;x++){
+    const i=(y*sw+x)*4; gray[y*sw+x]=_rgb2lum(data[i],data[i+1],data[i+2]);
+  }
+  const GRID=8; // 화살표 그리드
+  ctx.strokeStyle='rgba(100,200,255,0.7)'; ctx.lineWidth=1.5;
+  ctx.fillStyle='rgba(100,200,255,0.7)';
+  for(let gy=0;gy<GRID;gy++){
+    for(let gx=0;gx<GRID;gx++){
+      const sx=Math.floor(gx*sw/GRID)+1, ex=Math.floor((gx+1)*sw/GRID)-1;
+      const sy=Math.floor(gy*sh/GRID)+1, ey=Math.floor((gy+1)*sh/GRID)-1;
+      let mxG=0,myG=0;
+      for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++){
+        mxG+=gray[y*sw+(x+1)]-gray[y*sw+(x-1)];
+        myG+=gray[(y+1)*sw+x]-gray[(y-1)*sw+x];
+      }
+      const mag=Math.sqrt(mxG*mxG+myG*myG)||1;
+      if(mag<500) continue;
+      const px=(gx+0.5)*W/GRID, py=(gy+0.5)*H/GRID;
+      const len=Math.min(W,H)/GRID*0.35;
+      const dx=mxG/mag*len, dy=myG/mag*len;
+      ctx.beginPath(); ctx.moveTo(px-dx,py-dy); ctx.lineTo(px+dx,py+dy); ctx.stroke();
+      // 화살촉
+      const angle=Math.atan2(dy,dx);
+      const al=6;
+      ctx.beginPath();
+      ctx.moveTo(px+dx,py+dy);
+      ctx.lineTo(px+dx-al*Math.cos(angle-0.4),py+dy-al*Math.sin(angle-0.4));
+      ctx.lineTo(px+dx-al*Math.cos(angle+0.4),py+dy-al*Math.sin(angle+0.4));
+      ctx.closePath(); ctx.fill();
+    }
+  }
+}
+
+// ── 3. 기술적 분석 ─────────────────────────────────────────────
+function _runTechAnalysis() {
+  const data=_advImgData.data, W=_advImgW, H=_advImgH;
+
+  // 히스토그램
+  const hR=new Uint32Array(256),hG=new Uint32Array(256),hB=new Uint32Array(256),hL=new Uint32Array(256);
+  let sumR=0,sumG=0,sumB=0,cnt=W*H;
+  for(let i=0;i<data.length;i+=4){
+    hR[data[i]]++; hG[data[i+1]]++; hB[data[i+2]]++;
+    hL[Math.round(_rgb2lum(data[i],data[i+1],data[i+2]))]++;
+    sumR+=data[i]; sumG+=data[i+1]; sumB+=data[i+2];
+  }
+  const avgR=sumR/cnt,avgG=sumG/cnt,avgB=sumB/cnt;
+
+  const histEl=document.getElementById('adv-histogram');
+  const CHANNELS=[
+    {label:'L',data:hL,color:'rgba(220,220,220,0.8)'},
+    {label:'R',data:hR,color:'rgba(230,80,80,0.8)'},
+    {label:'G',data:hG,color:'rgba(80,200,100,0.8)'},
+    {label:'B',data:hB,color:'rgba(80,130,230,0.8)'},
+  ];
+  histEl.innerHTML='';
+  CHANNELS.forEach(ch=>{
+    const row=document.createElement('div'); row.className='adv-hist-row';
+    const lbl=document.createElement('div'); lbl.className='adv-hist-label'; lbl.textContent=ch.label;
+    const wrap=document.createElement('div'); wrap.className='adv-hist-bars';
+    const c=document.createElement('canvas'); c.className='adv-hist-canvas'; c.height=40;
+    wrap.appendChild(c); row.appendChild(lbl); row.appendChild(wrap); histEl.appendChild(row);
+    // 렌더는 ResizeObserver 없이 직접
+    setTimeout(()=>{
+      const W2=wrap.clientWidth||200; c.width=W2;
+      const ctx=c.getContext('2d');
+      ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--surface2');
+      ctx.fillRect(0,0,W2,40);
+      const maxV=Math.max(...ch.data);
+      ctx.fillStyle=ch.color;
+      for(let i=0;i<256;i++){
+        const x=Math.floor(i*W2/256);
+        const bw=Math.max(1,Math.floor(W2/256));
+        const bh=Math.round(ch.data[i]/maxV*38);
+        ctx.fillRect(x,40-bh,bw,bh);
+      }
+    },50);
+  });
+
+  // 노이즈 (Laplacian variance)
+  let lapSum=0, lapCnt=0;
+  const gray=new Float32Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=(y*W+x)*4; gray[y*W+x]=_rgb2lum(data[i],data[i+1],data[i+2]);
+  }
+  const lapVals=[];
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
+    const v=4*gray[y*W+x]-gray[(y-1)*W+x]-gray[(y+1)*W+x]-gray[y*W+(x-1)]-gray[y*W+(x+1)];
+    lapVals.push(v);
+  }
+  const lapMean=lapVals.reduce((a,b)=>a+b,0)/lapVals.length;
+  const lapVar=lapVals.reduce((a,b)=>a+(b-lapMean)**2,0)/lapVals.length;
+  const sharpness=Math.sqrt(lapVar);
+
+  // 대비 (RMS)
+  const lumArr=Array.from({length:cnt},(_,i)=>_rgb2lum(data[i*4],data[i*4+1],data[i*4+2]));
+  const lumMean=lumArr.reduce((a,b)=>a+b,0)/cnt;
+  const contrast=Math.sqrt(lumArr.reduce((a,b)=>a+(b-lumMean)**2,0)/cnt);
+
+  // 노이즈 추정 (인접 픽셀 차이 평균)
+  let noiseSumV=0, noiseCnt=0;
+  for(let y=0;y<H-1;y++) for(let x=0;x<W-1;x++){
+    const i=(y*W+x)*4, ir=i+4, ib=(y+1)*W*4+x*4;
+    for(let c=0;c<3;c++){
+      noiseSumV+=Math.abs(data[i+c]-data[ir+c]);
+      noiseSumV+=Math.abs(data[i+c]-data[ib+c]);
+      noiseCnt+=2;
+    }
+  }
+  const noiseLevel=noiseSumV/noiseCnt;
+
+  // 채도 평균
+  let satSum=0;
+  for(let i=0;i<data.length;i+=4){
+    satSum+=_rgb2hsb(data[i],data[i+1],data[i+2]).s;
+  }
+  const avgSat=satSum/cnt;
+
+  // 수치 카드
+  const noiseGrade=noiseLevel<3?'Low':noiseLevel<8?'Mid':'High';
+  const sharpGrade=sharpness>15?'Sharp':sharpness>6?'Normal':'Soft';
+  document.getElementById('adv-tech-metrics').innerHTML = [
+    { label:currentLang==='ko'?'선명도':'Sharpness', value:Math.round(sharpness), sub:sharpGrade, fill:Math.min(100,sharpness/30*100), color:'#5b6ef5' },
+    { label:currentLang==='ko'?'대비':'Contrast', value:Math.round(contrast), sub:contrast>50?'High':contrast>25?'Mid':'Low', fill:Math.min(100,contrast/80*100), color:'#a06ef5' },
+    { label:currentLang==='ko'?'노이즈':'Noise', value:noiseLevel.toFixed(1), sub:noiseGrade, fill:Math.min(100,noiseLevel/15*100), color:'#e05c5c' },
+    { label:currentLang==='ko'?'평균 채도':'Avg Sat', value:Math.round(avgSat)+'%', sub:'HSB S', fill:avgSat, color:'#3dba6f' },
+  ].map(m=>`
+    <div class="adv-metric">
+      <div class="adv-metric-label">${m.label}</div>
+      <div class="adv-metric-value">${m.value}</div>
+      <div class="adv-metric-sub">${m.sub}</div>
+      <div class="adv-metric-bar"><div class="adv-metric-bar-fill" style="width:${m.fill}%;background:${m.color}"></div></div>
+    </div>`).join('');
+
+  // 채널 통계
+  document.getElementById('adv-channel-stats').innerHTML = [
+    {ch:'R',avg:avgR,color:'#e05c5c'},
+    {ch:'G',avg:avgG,color:'#3dba6f'},
+    {ch:'B',avg:avgB,color:'#4a8cdf'},
+    {ch:currentLang==='ko'?'L (밝기)':'L (Lum)',avg:lumMean,color:'#ccc'},
+  ].map(c=>`
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <span style="font-weight:700;color:${c.color};width:50px">${c.ch}</span>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="width:${Math.round(c.avg/255*100)}%;height:100%;background:${c.color};border-radius:3px"></div>
+      </div>
+      <span style="font-size:10px;color:var(--text-dim);width:36px;text-align:right">${Math.round(c.avg)}</span>
+    </div>`).join('');
 }
 
 // ── 전체 렌더 ─────────────────────────────────────────────────
